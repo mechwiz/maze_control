@@ -6,10 +6,12 @@ import numpy as np
 from scipy import stats
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
+from maze_control.msg import IntList, Waypoints
 
 class image_overlay:
 
     def __init__(self):
+        self.allpts=[]
         self.avgpnt = []
         self.avgpnts1x = []
         self.avgpnts1y = []
@@ -25,7 +27,7 @@ class image_overlay:
         self.avgpnts6y = []
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber("/usb_cam/image_raw",Image,self.imagecb)
-        # self.image_pub = rospy.Publisher("center_point",Point,queue_size=10)
+        self.list_pub = rospy.Publisher("waypoints",Waypoints,queue_size=10)
 
     def imagecb(self,data):
         try:
@@ -135,7 +137,7 @@ class image_overlay:
                         cnt = skp
                         while cnt < len(top)-1:
                             wp = top[int(np.round(cnt))]
-                            allpts.append(wp)
+                            allpts.append(IntList(wp))
                             cv2.circle(img_original,(wp[0],wp[1]),5,(0,0,255),-1)
                             cnt+=skp
                         lvl+=1
@@ -145,7 +147,7 @@ class image_overlay:
                     cnt = skp
                     while cnt < len(mid)-1:
                         wp = mid[int(np.round(cnt))]
-                        allpts.append(wp)
+                        allpts.append(IntList(wp))
                         cv2.circle(img_original,(wp[0],wp[1]),5,(0,0,255),-1)
                         cnt+=skp
 
@@ -174,14 +176,26 @@ class image_overlay:
                         cnt = skp
                         while cnt < len(bot)-1:
                             wp = bot[int(np.round(cnt))]
-                            allpts.append(wp)
+                            allpts.append(IntList(wp))
                             cv2.circle(img_original,(wp[0],wp[1]),5,(0,0,255),-1)
                             cnt+=skp
                         lvl-=1
+
+                    self.allpts = allpts
                     # print allpts
 
+
             cv2.imshow("Converted Image",img_original)
-            cv2.waitKey(3)
+            k = cv2.waitKey(3)
+
+            if k == ord('c') and len(self.avgpnt)>1:
+                # print self.allpts
+                alist = Waypoints()
+                alist.data = self.allpts
+                self.list_pub.publish(alist)
+                rospy.loginfo('Points Captured')
+                # print s1.data
+
         except CvBridgeError, e:
             print("==[CAMERA MANAGER]==", e)
 
