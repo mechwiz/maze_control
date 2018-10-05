@@ -56,7 +56,7 @@ class image_overlay:
             upper_red = np.array([25,255,255])
 
             img_original = self.bridge.imgmsg_to_cv2(data, "bgr8")
-            img_original = cv2.flip(img_original,1)
+            # img_original = cv2.flip(img_original,1)
             hsv = cv2.cvtColor(img_original,cv2.COLOR_BGR2HSV)
             mask = cv2.inRange(hsv,lower_red, upper_red)
 
@@ -182,6 +182,8 @@ class image_overlay:
                         lvl-=1
 
                     self.allpts = allpts
+                    for i in range(6):
+                        self.allpts.append(IntList(self.avgpnt[i]))
                     # print allpts
 
 
