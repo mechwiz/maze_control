@@ -7,6 +7,7 @@ from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
 from maze_control.msg import IntList, Waypoints
 from geometry_msgs.msg import Point
+from std_msgs.msg import ColorRGBA
 
 
 class sphero_finder:
@@ -20,6 +21,8 @@ class sphero_finder:
         self.image_sub = rospy.Subscriber("/waypoints",Waypoints,self.waypntcb)
         self.image_pub = rospy.Publisher("center_point1",Point,queue_size=10)
         self.image_pub2 = rospy.Publisher("center_point2",Point,queue_size=10)
+        self.prey_color_pub = rospy.Publisher("prey/set_color",ColorRGBA,queue_size=1)
+        self.predator_color_pub = rospy.Publisher("predator/set_color",ColorRGBA,queue_size=1)
 
     def imagecb(self,data):
         try:
@@ -33,6 +36,8 @@ class sphero_finder:
             # cv2.createTrackbar('Upper Hue','Converted Image',0,180,nothing)
             # cv2.createTrackbar('Upper Sat','Converted Image',0,255,nothing)
             # cv2.createTrackbar('Upper Value','Converted Image',0,255,nothing)
+            # switch = '0 : OFF \n1 : ON'
+            # cv2.createTrackbar(switch, 'Converted Image',0,1,nothing)
 
             # lowh = cv2.getTrackbarPos('Lower Hue','Converted Image')
             # lows = cv2.getTrackbarPos('Lower Sat','Converted Image')
@@ -40,21 +45,22 @@ class sphero_finder:
             # upph = cv2.getTrackbarPos('Upper Hue','Converted Image')
             # upps = cv2.getTrackbarPos('Upper Sat','Converted Image')
             # uppv= cv2.getTrackbarPos('Upper Value','Converted Image')
-            # switch = '0 : OFF \n1 : ON'
-            # cv2.createTrackbar(switch, 'Converted Image',0,1,nothing)
+
             # lower_red = np.array([lowh,lows,lowv])
             # upper_red = np.array([upph,upps,uppv])
-            lower_red = np.array([37,83,0])
-            upper_red = np.array([170,255,255])
-            lower_red2 = np.array([0,180,125])
-            upper_red2 = np.array([10,255,255])
+            lower_red = np.array([140,75,150])
+            upper_red = np.array([180,170,255])
+            lower_red2 = np.array([70,90,175])
+            upper_red2 = np.array([130,190,255])
+            # lower_red2 = np.array([0,180,125])
+            # upper_red2 = np.array([10,255,255])
 
             img_original = self.bridge.imgmsg_to_cv2(data, "bgr8")
             # img_original = cv2.flip(img_original,1)
             hsv = cv2.cvtColor(img_original,cv2.COLOR_BGR2HSV)
             mask = cv2.inRange(hsv,lower_red, upper_red)
             mask2 = cv2.inRange(hsv,lower_red2, upper_red2)
-            # res =cv2.bitwise_and(img_original,img_original,mask= mask)
+            #res =cv2.bitwise_and(img_original,img_original,mask= mask)
 
             contour = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
             contour2 = cv2.findContours(mask2.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
@@ -82,7 +88,7 @@ class sphero_finder:
                     center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
                 # else:
                 #   center = (0,0)
-                    # res = cv2.circle(res,(int(center[0]),int(center[1])),int(radius),(0,0,255),2)
+                    #res = cv2.circle(res,(int(center[0]),int(center[1])),int(radius),(0,0,255),2)
                     img_original = cv2.circle(img_original,(int(center[0]),int(center[1])),int(radius),(255,0,0),2)
 
                   #print center
@@ -101,6 +107,7 @@ class sphero_finder:
                     cv2.circle(img_original,(wp[0],wp[1]),5,(255,0,0),-1)
 
             cv2.imshow("Converted Image",img_original)#np.hstack([img_original,res]))
+            #cv2.imshow("Converted Image",np.hstack([img_original,res]))
 
             cv2.waitKey(3)
         except CvBridgeError, e:
@@ -119,12 +126,15 @@ class sphero_finder:
         # print alist
 
 
-# def nothing(x):
-#     pass
+def nothing(x):
+    pass
 
 def main():
     rospy.init_node('sphero_finder', anonymous=True)
     ic = sphero_finder()
+    rospy.sleep(1)
+    ic.prey_color_pub.publish(ColorRGBA(1,0,0,1))
+    ic.predator_color_pub.publish(ColorRGBA(0,0,1,1))
     try:
         rospy.spin()
     except KeyboardInterrupt:
