@@ -2,148 +2,149 @@
 import rospy
 import cv2
 import numpy as np
+import csv
+import math
 
-from cv_bridge import CvBridge, CvBridgeError
-from sensor_msgs.msg import Image
 from maze_control.msg import IntList, Waypoints
-from geometry_msgs.msg import Point
-from std_msgs.msg import ColorRGBA
+from geometry_msgs.msg import Point, Twist
+from std_msgs.msg import ColorRGBA, Float32
+from nav_msgs.msg import Odometry
+from pidController import pidController
 
 
-class sphero_finder:
+class sphero_control:
 
     def __init__(self):
-
+        self.achieved = []
         self.waypnts = []
-        self.outline = []
-        self.bridge = CvBridge()
-        self.image_sub = rospy.Subscriber("/usb_cam/image_raw",Image,self.imagecb)
-        self.image_sub = rospy.Subscriber("/waypoints",Waypoints,self.waypntcb)
-        self.image_pub = rospy.Publisher("center_point1",Point,queue_size=10)
-        self.image_pub2 = rospy.Publisher("center_point2",Point,queue_size=10)
-        self.prey_color_pub = rospy.Publisher("prey/set_color",ColorRGBA,queue_size=1)
-        self.predator_color_pub = rospy.Publisher("predator/set_color",ColorRGBA,queue_size=1)
+        self.waypnt_dict = {}
+        self.path = []
+        self.pathpnt =[]
+        self.prey_speed = 0
+        self.predator_speed = 0
+        self.prey = pidController()
+        self.predator = pidController()
+        self.waypnt_sub = rospy.Subscriber("/waypoints",Waypoints,self.waypntcb)
+        self.prey_sub = rospy.Subscriber("/center_point1",Point,self.prey_cb)
+        # self.predator_sub = rospy.Subscriber("/center_point2",Point,self.predator_cb)
+        self.prey_odm_sub = rospy.Subscriber("/prey/odom",Odometry,self.prey_odom)
+        self.prey_vel_pub = rospy.Publisher("prey/cmd_vel",Twist,queue_size=10)
+        # self.prey_heading_pub = rospy.Publisher("prey/set_heading",Float32,queue_size=10)
 
-    def imagecb(self,data):
-        try:
+    def prey_odom(self,data):
+        self.prey_speed = math.sqrt((data.twist.twist.linear.x*100)**2 +(data.twist.twist.linear.y*100)**2)
+        # print self.prey_speed
+    def prey_cb(self,data):
 
-            # Convert Image message to CV image with blue-green-red color order (bgr8)
-            # create trackbars for color change
-            # cv2.namedWindow('Converted Image')
-            # cv2.createTrackbar('Lower Hue','Converted Image',0,180,nothing)
-            # cv2.createTrackbar('Lower Sat','Converted Image',0,255,nothing)
-            # cv2.createTrackbar('Lower Value','Converted Image',0,255,nothing)
-            # cv2.createTrackbar('Upper Hue','Converted Image',0,180,nothing)
-            # cv2.createTrackbar('Upper Sat','Converted Image',0,255,nothing)
-            # cv2.createTrackbar('Upper Value','Converted Image',0,255,nothing)
-            # switch = '0 : OFF \n1 : ON'
-            # cv2.createTrackbar(switch, 'Converted Image',0,1,nothing)
+        if len(self.pathpnt) > 0 and len(self.achieved) < len(self.path):
+            y = data.y
+            x = data.x
 
-            # lowh = cv2.getTrackbarPos('Lower Hue','Converted Image')
-            # lows = cv2.getTrackbarPos('Lower Sat','Converted Image')
-            # lowv = cv2.getTrackbarPos('Lower Value','Converted Image')
-            # upph = cv2.getTrackbarPos('Upper Hue','Converted Image')
-            # upps = cv2.getTrackbarPos('Upper Sat','Converted Image')
-            # uppv= cv2.getTrackbarPos('Upper Value','Converted Image')
+            targetnum = len(self.achieved)
+            # print targetnum
+            xt,yt = self.pathpnt[targetnum]
 
-            # lower_red = np.array([lowh,lows,lowv])
-            # upper_red = np.array([upph,upps,uppv])
-            lower_red = np.array([140,75,150])
-            upper_red = np.array([180,170,255])
-            lower_red2 = np.array([70,90,175])
-            upper_red2 = np.array([130,190,255])
-            # lower_red2 = np.array([0,180,125])
-            # upper_red2 = np.array([10,255,255])
+            angle, distance = vector_to_target(x,y,xt,yt)
+            # print angle, distance
 
-            img_original = self.bridge.imgmsg_to_cv2(data, "bgr8")
-            # img_original = cv2.flip(img_original,1)
-            hsv = cv2.cvtColor(img_original,cv2.COLOR_BGR2HSV)
-            mask = cv2.inRange(hsv,lower_red, upper_red)
-            mask2 = cv2.inRange(hsv,lower_red2, upper_red2)
-            #res =cv2.bitwise_and(img_original,img_original,mask= mask)
+            if distance < 10:
+                self.achieved.append(self.pathpnt[targetnum])
+                targetnum = len(self.achieved)
+                if len(self.achieved) < len(self.path):
+                    xt,yt = self.pathpnt[targetnum]
+                    angle, distance = vector_to_target(x,y,xt,yt)
 
-            contour = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
-            contour2 = cv2.findContours(mask2.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
-            center = None
+            outspeed = self.prey.getPIDSpeed(distance,self.prey_speed)
 
-            if len(contour) > 0:
-                c = max(contour, key = cv2.contourArea)
-                ((x,y),radius) = cv2.minEnclosingCircle(c)
-                M = cv2.moments(c)
-                if radius > 5:
-                    center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-                # else:
-                #   center = (0,0)
-                    # res = cv2.circle(res,(int(center[0]),int(center[1])),int(radius),(0,255,0),2)
-                    img_original = cv2.circle(img_original,(int(center[0]),int(center[1])),int(radius),(0,255,0),2)
+            self.roll_sphero('Prey',outspeed,-angle,0)
 
-                  #print center
-                    self.image_pub.publish(center[0],center[1],0)
 
-            if len(contour2) > 0:
-                c = max(contour2, key = cv2.contourArea)
-                ((x,y),radius) = cv2.minEnclosingCircle(c)
-                M = cv2.moments(c)
-                if radius > 5:
-                    center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-                # else:
-                #   center = (0,0)
-                    #res = cv2.circle(res,(int(center[0]),int(center[1])),int(radius),(0,0,255),2)
-                    img_original = cv2.circle(img_original,(int(center[0]),int(center[1])),int(radius),(255,0,0),2)
+    def roll_sphero(self,sph,speed,angle,offset):
+        newTwist = Twist()
+        # newTwist.linear.y = speed
+        newTwist.linear.x = math.cos(math.radians(angle))*speed
+        newTwist.linear.y = math.sin(math.radians(angle))*speed
 
-                  #print center
-                    self.image_pub2.publish(center[0],center[1],0)
-
-            if len(self.waypnts) > 0:
-                for wp in self.waypnts:
-                    cv2.circle(img_original,(wp[0],wp[1]),5,(0,0,255),-1)
-
-                pts = np.array(self.outline,np.int32)
-                pts = pts.reshape((-1,1,2))
-                cv2.polylines(img_original,[pts],True,(0,255,0),3)
-                # cv2.drawContours(img_original, np.array(self.outline), -1, (0, 255, 0), 3)
-
-                for wp in self.outline:
-                    cv2.circle(img_original,(wp[0],wp[1]),5,(255,0,0),-1)
-
-            cv2.imshow("Converted Image",img_original)#np.hstack([img_original,res]))
-            #cv2.imshow("Converted Image",np.hstack([img_original,res]))
-
-            cv2.waitKey(3)
-        except CvBridgeError, e:
-            print("==[CAMERA MANAGER]==", e)
+        if sph == 'Prey':
+            self.prey_vel_pub.publish(newTwist)
+            # self.prey_heading_pub.publish(Float32(angle+offset))
 
     def waypntcb(self,data):
         alist = []
-        outln = []
-        for i in range(len(data.data)):
-            if i < len(data.data)-6:
-                alist.append(data.data[i].data)
-            else:
-                outln.append(data.data[i].data)
+        for i in range(len(data.data)-6):
+            alist.append(data.data[i].data)
         self.waypnts = alist
-        self.outline = outln
-        # print alist
 
+        lvl = 6
+        cnt = 0
+        change = False
+        for i in range(9):
+            if i == 0:
+                name = 'A'
+            elif i == 1:
+                name = 'B'
+            elif i == 2:
+                name = 'C'
+            elif i == 3:
+                name = 'D'
+            elif i == 4:
+                name = 'E'
+            elif i == 5:
+                name = 'F'
+            elif i == 6:
+                name = 'G'
+            elif i == 7:
+                name = 'H'
+            else:
+                name = 'I'
 
-def nothing(x):
-    pass
+            for j in range(1,lvl):
+                cell = name + str(j)
+                self.waypnt_dict[cell] = alist[cnt]
+                # print cnt
+                cnt+=1
+
+            if lvl == 10:
+                 change = True
+            if lvl < 10 and change == False:
+                lvl += 1
+            else:
+                lvl -= 1
+
+        # print self.waypnt_dict
+        self.pathpnt = []
+        for i in range(len(self.path)):
+            self.pathpnt.append(self.waypnt_dict[self.path[i]])
+
+def closest_node(node, nodes):
+    nodes = np.asarray(nodes)
+    dist_2 = np.sum((nodes - node)**2, axis=1)
+    return np.argmin(dist_2)
+
+def vector_to_target(currentX, currentY, targetX, targetY):
+    '''
+        Returns distance and angle between two points (in degrees)
+    '''
+    deltaX = targetX - currentX
+    deltaY = targetY - currentY
+    angle = math.degrees(math.atan2(deltaY, deltaX))
+    distance = math.sqrt(deltaX * deltaX + deltaY * deltaY)
+
+    return angle, distance
 
 def main():
-    rospy.init_node('sphero_finder', anonymous=True)
-    ic = sphero_finder()
-    rospy.sleep(1)
-    ic.prey_color_pub.publish(ColorRGBA(1,0,0,1))
-    ic.predator_color_pub.publish(ColorRGBA(0,0,1,1))
+    rospy.init_node('sphero_control', anonymous=True)
+    ic = sphero_control()
+
+    with open('/home/mikewiz/project_ws/src/maze_control/src/path.csv') as csvfile:
+        readCSV = csv.reader(csvfile, delimiter=',')
+        for row in readCSV:
+            ic.path.append(row[0])
+
     try:
         rospy.spin()
     except KeyboardInterrupt:
         print("Shutting down")
-    cv2.destroyAllWindows()
-    # rospy.init_node('main')
-    # rospy.Subscriber("/waypoints",Waypoints,data_cb)
-
-    # rospy.spin()
 
 if __name__ == "__main__":
     main()
