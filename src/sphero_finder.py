@@ -14,7 +14,7 @@ from std_msgs.msg import ColorRGBA
 class sphero_finder:
 
     def __init__(self):
-
+        self.raw_waypnts = Waypoints()
         self.waypnts = []
         self.waypnt_dict = {}
         self.path = []
@@ -23,6 +23,7 @@ class sphero_finder:
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber("/usb_cam/image_raw",Image,self.imagecb)
         self.image_sub = rospy.Subscriber("/waypoints",Waypoints,self.waypntcb)
+        self.list_pub = rospy.Publisher("waypoints_fixed",Waypoints,queue_size=10)
         self.image_pub = rospy.Publisher("center_point1",Point,queue_size=10)
         self.image_pub2 = rospy.Publisher("center_point2",Point,queue_size=10)
         self.prey_color_pub = rospy.Publisher("prey/set_color",ColorRGBA,queue_size=1)
@@ -116,11 +117,15 @@ class sphero_finder:
             cv2.imshow("Converted Image",img_original)#np.hstack([img_original,res]))
             #cv2.imshow("Converted Image",np.hstack([img_original,res]))
 
-            cv2.waitKey(3)
+            k = cv2.waitKey(3)
+            if k == ord('f') and len(self.waypnts)>0:
+                self.list_pub.publish(self.raw_waypnts)
+                rospy.loginfo('Points Captured')
         except CvBridgeError, e:
             print("==[CAMERA MANAGER]==", e)
 
     def waypntcb(self,data):
+        self.raw_waypnts = data
         alist = []
         outln = []
         for i in range(len(data.data)):
