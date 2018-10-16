@@ -17,13 +17,13 @@ class pidController():
 
     def __init__(self):
         self.isRunning = False
-        self.epsilon = 0.1  # some small bound?
+        self.epsilon = 0.01  # some small bound?
 
     def reset(self):
         self.isRunning = False
 
-    def getPIDSpeed(self, distance, speed, Kp=.4, Ki=.5, Kd=2,
-                    stopRadius=30, maxSpeed=50, minSpeed=20, resumeSpeed=30):
+    def getPIDSpeed(self, distance, speed, Kp=0.2, Ki=0.01, Kd=0.4,
+                    stopRadius=10, maxSpeed=50, minSpeed=20, resumeSpeed=20):
 
         """
             Returns a speed value (0 - 255) for based on distance to target
@@ -60,6 +60,7 @@ class pidController():
 
             # PID equation
             # Make select mode using PID switch
+            # print deltaT, deltaT2
             if (deltaT < self.epsilon) or (deltaT2 < self.epsilon):
                 u = self.prevU + Kp * (distance - self.prevE) \
                                + Ki * deltaT * distance
@@ -70,6 +71,7 @@ class pidController():
                                  (((distance - self.prevE) / deltaT) -
                                   ((self.prevE - self.prev2E) / deltaT2))
 
+            # print speed,u
             # If robot has stopped moving, reset it
             if (speed < 2) and (u < resumeSpeed):
                 u = resumeSpeed
