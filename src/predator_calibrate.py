@@ -6,9 +6,10 @@ import math
 from maze_control.msg import IntList, Waypoints
 from geometry_msgs.msg import Point, Twist
 from std_msgs.msg import Float32
+from maze_control.srv import offset
 
 
-class sphero_calibrate:
+class predator_calibrate:
 
     def __init__(self):
         self.waypnts = []
@@ -16,33 +17,35 @@ class sphero_calibrate:
         self.timer = 0
         self.x_list = []
         self.y_list = []
+        self.predator_offset = 0
         self.calibrated = False
-        self.waypnt_sub = rospy.Subscriber("/waypoints",Waypoints,self.waypntcb)
-        self.prey_sub = rospy.Subscriber("/center_point1",Point,self.prey_cb)
-        # self.predator_sub = rospy.Subscriber("/center_point2",Point,self.predator_cb)
-        # self.prey_odm_sub = rospy.Subscriber("/prey/odom",Odometry,self.prey_odom)
-        self.prey_vel_pub = rospy.Publisher("prey/cmd_vel",Twist,queue_size=10)
-        self.prey_offset_pub = rospy.Publisher("prey/offset",Float32,queue_size=10)
-        # self.prey_heading_pub = rospy.Publisher("prey/set_heading",Float32,queue_size=10)
+        self.waypnt_sub = rospy.Subscriber("/waypoints_fixed",Waypoints,self.waypntcb)
+        self.predator_sub = rospy.Subscriber("/center_point2",Point,self.predator_cb)
+        self.predator_vel_pub = rospy.Publisher("predator/cmd_vel",Twist,queue_size=10)
+        self.predator_offset_srv = rospy.Service("predator/offset",offset,self.offset_srv)
 
+    def offset_srv(self,req):
+        while self.calibrated == False:
+            pass
 
-        # print self.prey_speed
-    def prey_cb(self,data):
+        return Float32(self.predator_offset)
+
+    def predator_cb(self,data):
 
         if self.calibrated == False and len(self.waypnt_dict)>0:
             t = rospy.Time.now()
             time_diff = t-self.timer
             ts = time_diff.to_sec()
-            print ts
+            # print ts
             if ts < 3:
-                self.roll_sphero('Prey',20,0,0)
+                self.roll_sphero('Predator',30,0,0)
                 if ts > 1:
                     y = data.y
                     x = data.x
                     self.x_list.append(x)
                     self.y_list.append(y)
             else:
-                self.roll_sphero('Prey',0,0,0)
+                self.roll_sphero('predator',0,0,0)
                 xg1,yg1 = self.waypnt_dict['E1']
                 xg2,yg2 = self.waypnt_dict['E9']
 
@@ -56,8 +59,7 @@ class sphero_calibrate:
                 v1 = np.array([xl2,yl1]-np.array([xl1,yl2]))
 
                 angle = math.degrees(np.math.atan2(np.linalg.det([v0,v1]),np.dot(v0,v1)))
-
-                self.prey_offset_pub.publish(Float32(angle))
+                self.predator_offset = angle
                 self.calibrated = True
 
         else:
@@ -65,13 +67,10 @@ class sphero_calibrate:
 
     def roll_sphero(self,sph,speed,angle,offset):
         newTwist = Twist()
-        # newTwist.linear.y = speed
-        newTwist.linear.x = speed #math.cos(math.radians(angle))*speed
-        # newTwist.linear.y = math.sin(math.radians(angle))*speed
+        newTwist.linear.x = speed
 
-        if sph == 'Prey':
-            self.prey_vel_pub.publish(newTwist)
-            # self.prey_heading_pub.publish(Float32(angle+offset))
+        if sph == 'Predator':
+            self.predator_vel_pub.publish(newTwist)
 
     def waypntcb(self,data):
         alist = []
@@ -117,8 +116,8 @@ class sphero_calibrate:
         self.timer = rospy.Time.now()
 
 def main():
-    rospy.init_node('sphero_calibrate', anonymous=True)
-    ic = sphero_calibrate()
+    rospy.init_node('predator_calibrate', anonymous=True)
+    ic = predator_calibrate()
     try:
         rospy.spin()
     except KeyboardInterrupt:
