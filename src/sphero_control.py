@@ -22,21 +22,26 @@ class sphero_control:
         self.pathpnt =[]
         self.prey_speed = 0
         self.predator_speed = 0
+        self.prey_offset = 0
         self.prey = pidController()
         self.predator = pidController()
         self.waypnt_sub = rospy.Subscriber("/waypoints",Waypoints,self.waypntcb)
         self.prey_sub = rospy.Subscriber("/center_point1",Point,self.prey_cb)
+        self.prey_offset_sub = rospy.Subscriber("/prey/offset",Float32,self.prey_offset_cb)
         # self.predator_sub = rospy.Subscriber("/center_point2",Point,self.predator_cb)
         self.prey_odm_sub = rospy.Subscriber("/prey/odom",Odometry,self.prey_odom)
         self.prey_vel_pub = rospy.Publisher("prey/cmd_vel",Twist,queue_size=10)
         # self.prey_heading_pub = rospy.Publisher("prey/set_heading",Float32,queue_size=10)
+
+    def prey_offset_cb(self,data):
+        self.prey_offset = data.data
 
     def prey_odom(self,data):
         self.prey_speed = math.sqrt((data.twist.twist.linear.x*100)**2 +(data.twist.twist.linear.y*100)**2)
         # print self.prey_speed
     def prey_cb(self,data):
 
-        if len(self.pathpnt) > 0 and len(self.achieved) < len(self.path):
+        if len(self.pathpnt) > 0 and len(self.achieved) < len(self.path) and np.abs(self.prey_offset) > 0:
             y = data.y
             x = data.x
 
@@ -56,12 +61,13 @@ class sphero_control:
 
             outspeed = self.prey.getPIDSpeed(distance,self.prey_speed)
 
-            self.roll_sphero('Prey',outspeed,-angle,0)
+            self.roll_sphero('Prey',outspeed,-angle,-self.prey_offset)
 
 
     def roll_sphero(self,sph,speed,angle,offset):
         newTwist = Twist()
         # newTwist.linear.y = speed
+        angle = angle + offset
         newTwist.linear.x = math.cos(math.radians(angle))*speed
         newTwist.linear.y = math.sin(math.radians(angle))*speed
 
