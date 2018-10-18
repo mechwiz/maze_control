@@ -17,22 +17,27 @@ from pidController import pidController
 class sphero_control:
 
     def __init__(self):
-        self.achieved = []
+        self.prey_achieved = []
+        self.predator_achieved = []
         self.waypnts = []
         self.waypnt_dict = {}
-        self.path = []
-        self.pathpnt =[]
+        self.prey_path = []
+        self.prey_pathpnt =[]
+        self.predator_path = []
+        self.predator_pathpnt =[]
         self.prey_speed = 0
         self.predator_speed = 0
         self.prey_offset = 0
+        self.predator_offset = 0
         self.prey = pidController()
         self.predator = pidController()
         self.waypnt_sub = rospy.Subscriber("/waypoints_fixed",Waypoints,self.waypntcb)
         self.prey_sub = rospy.Subscriber("/center_point1",Point,self.prey_cb)
-        # self.prey_offset_sub = rospy.Subscriber("/prey/offset",Float32,self.prey_offset_cb)
-        # self.predator_sub = rospy.Subscriber("/center_point2",Point,self.predator_cb)
+        self.predator_sub = rospy.Subscriber("/center_point2",Point,self.predator_cb)
         self.prey_odm_sub = rospy.Subscriber("/prey/odom",Odometry,self.prey_odom)
         self.prey_vel_pub = rospy.Publisher("prey/cmd_vel",Twist,queue_size=10)
+        self.predator_odm_sub = rospy.Subscriber("/predator/odom",Odometry,self.predator_odom)
+        self.predator_vel_pub = rospy.Publisher("predator/cmd_vel",Twist,queue_size=10)
         # self.prey_heading_pub = rospy.Publisher("prey/set_heading",Float32,queue_size=10)
 
     # def prey_offset_cb(self,data):
@@ -43,24 +48,24 @@ class sphero_control:
         # print self.prey_speed
     def prey_cb(self,data):
         # print self.prey_offset
-        if len(self.pathpnt) > 0 and len(self.achieved) < len(self.path) and np.abs(self.prey_offset) > 0:
+        if len(self.prey_pathpnt) > 0 and len(self.prey_achieved) < len(self.prey_path) and np.abs(self.prey_offset) > 0:
             y = data.y
             x = data.x
 
-            targetnum = len(self.achieved)
+            targetnum = len(self.prey_achieved)
             # print targetnum
-            xt,yt = self.pathpnt[targetnum]
+            xt,yt = self.prey_pathpnt[targetnum]
 
             angle, distance = vector_to_target(x,y,xt,yt)
             outspeed = self.prey.getPIDSpeed(distance,self.prey_speed)
             # print angle, distance
 
             if distance < 20:
-                self.achieved.append(self.pathpnt[targetnum])
-                targetnum = len(self.achieved)
-                if len(self.achieved) < len(self.path):
+                self.prey_achieved.append(self.prey_pathpnt[targetnum])
+                targetnum = len(self.prey_achieved)
+                if len(self.prey_achieved) < len(self.prey_path):
                     # self.roll_sphero('Prey',outspeed,-(angle+180),self.prey_offset)
-                    xt,yt = self.pathpnt[targetnum]
+                    xt,yt = self.prey_pathpnt[targetnum]
                     angle, distance = vector_to_target(x,y,xt,yt)
                     self.prey.reset()
                     outspeed = self.prey.getPIDSpeed(distance,self.prey_speed)
@@ -73,6 +78,41 @@ class sphero_control:
                 self.roll_sphero('Prey',outspeed,-angle,-self.prey_offset)
             # rospy.sleep(0.5)
 
+    def predator_odom(self,data):
+        self.predator_speed = math.sqrt((data.twist.twist.linear.x*100)**2 +(data.twist.twist.linear.y*100)**2)
+        # print self.prey_speed
+
+    def predator_cb(self,data):
+        # print self.prey_offset
+        if len(self.predator_pathpnt) > 0 and len(self.predator_achieved) < len(self.predator_path) and np.abs(self.predator_offset) > 0:
+            y = data.y
+            x = data.x
+
+            targetnum = len(self.predator_achieved)
+            # print targetnum
+            xt,yt = self.predator_pathpnt[targetnum]
+
+            angle, distance = vector_to_target(x,y,xt,yt)
+            outspeed = self.predator.getPIDSpeed(distance,self.predator_speed)
+            # print angle, distance
+
+            if distance < 20:
+                self.predator_achieved.append(self.predator_pathpnt[targetnum])
+                targetnum = len(self.predator_achieved)
+                if len(self.predator_achieved) < len(self.predator_path):
+                    # self.roll_sphero('Prey',outspeed,-(angle+180),self.prey_offset)
+                    xt,yt = self.predator_pathpnt[targetnum]
+                    angle, distance = vector_to_target(x,y,xt,yt)
+                    self.predator.reset()
+                    outspeed = self.predator.getPIDSpeed(distance,self.predator_speed)
+                    self.roll_sphero('Predator',outspeed,-angle,-self.predator_offset)
+                    rospy.sleep(0.4)
+
+
+            # print outspeed
+            else:
+                self.roll_sphero('Predator',outspeed,-angle,-self.predator_offset)
+            # rospy.sleep(0.5)
 
     def roll_sphero(self,sph,speed,angle,offset):
         newTwist = Twist()
@@ -83,6 +123,8 @@ class sphero_control:
 
         if sph == 'Prey':
             self.prey_vel_pub.publish(newTwist)
+        else:
+            self.predator_vel_pub.publish(newTwist)
             # self.prey_heading_pub.publish(Float32(angle+offset))
 
     def waypntcb(self,data):
@@ -128,9 +170,13 @@ class sphero_control:
                 lvl -= 1
 
         # print self.waypnt_dict
-        self.pathpnt = []
-        for i in range(len(self.path)):
-            self.pathpnt.append(self.waypnt_dict[self.path[i]])
+        self.prey_pathpnt = []
+        for i in range(len(self.prey_path)):
+            self.prey_pathpnt.append(self.waypnt_dict[self.prey_path[i]])
+
+        self.predator_pathpnt = []
+        for i in range(len(self.predator_path)):
+            self.predator_pathpnt.append(self.waypnt_dict[self.predator_path[i]])
 
 def closest_node(node, nodes):
     nodes = np.asarray(nodes)
@@ -158,14 +204,14 @@ def main():
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
 
-    # getOffset = rospy.ServiceProxy("predator/offset",offset)
-    # rospy.wait_for_service("predator/offset")
-    # try:
-    #     predator_offset = getOffset()
+    getOffset = rospy.ServiceProxy("predator/offset",offset)
+    rospy.wait_for_service("predator/offset")
+    try:
+        predator_offset = getOffset()
 
-    #     pass
-    # except rospy.ServiceException, e:
-    #     print "Service call failed: %s"%e
+        pass
+    except rospy.ServiceException, e:
+        print "Service call failed: %s"%e
 
     rospy.init_node('sphero_control', anonymous=True)
     ic = sphero_control()
@@ -173,8 +219,10 @@ def main():
     with open('/home/mikewiz/project_ws/src/maze_control/src/path.csv') as csvfile:
         readCSV = csv.reader(csvfile, delimiter=',')
         for row in readCSV:
-            ic.path.append(row[0])
+            ic.prey_path.append(row[0])
+            ic.predator_path.append(row[1])
     ic.prey_offset = prey_offset.offset.data
+    ic.predator_offset = predator_offset.offset.data
 
     try:
         rospy.spin()

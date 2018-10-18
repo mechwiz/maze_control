@@ -17,8 +17,10 @@ class sphero_finder:
         self.raw_waypnts = Waypoints()
         self.waypnts = []
         self.waypnt_dict = {}
-        self.path = []
-        self.pathpnt = []
+        self.prey_path = []
+        self.prey_pathpnt = []
+        self.predator_path = []
+        self.predator_pathpnt = []
         self.outline = []
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber("/usb_cam/image_raw",Image,self.imagecb)
@@ -51,12 +53,14 @@ class sphero_finder:
             # upps = cv2.getTrackbarPos('Upper Sat','Converted Image')
             # uppv= cv2.getTrackbarPos('Upper Value','Converted Image')
 
-            # lower_red = np.array([lowh,lows,lowv])
-            # upper_red = np.array([upph,upps,uppv])
+            # lower_red2 = np.array([lowh,lows,lowv])
+            # upper_red2 = np.array([upph,upps,uppv])
             lower_red = np.array([140,75,150])
             upper_red = np.array([180,170,255])
+            # lower_red2 = np.array([70,90,175])
+            # upper_red2 = np.array([130,190,255])
             lower_red2 = np.array([70,90,175])
-            upper_red2 = np.array([130,190,255])
+            upper_red2 = np.array([120,217,255])
             # lower_red2 = np.array([0,180,125])
             # upper_red2 = np.array([10,255,255])
 
@@ -65,7 +69,7 @@ class sphero_finder:
             hsv = cv2.cvtColor(img_original,cv2.COLOR_BGR2HSV)
             mask = cv2.inRange(hsv,lower_red, upper_red)
             mask2 = cv2.inRange(hsv,lower_red2, upper_red2)
-            #res =cv2.bitwise_and(img_original,img_original,mask= mask)
+            # res =cv2.bitwise_and(img_original,img_original,mask= mask2)
 
             contour = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
             contour2 = cv2.findContours(mask2.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
@@ -93,7 +97,7 @@ class sphero_finder:
                     center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
                 # else:
                 #   center = (0,0)
-                    #res = cv2.circle(res,(int(center[0]),int(center[1])),int(radius),(0,0,255),2)
+                    # res = cv2.circle(res,(int(center[0]),int(center[1])),int(radius),(255,0,0),2)
                     img_original = cv2.circle(img_original,(int(center[0]),int(center[1])),int(radius),(255,0,0),2)
 
                   #print center
@@ -111,11 +115,14 @@ class sphero_finder:
                 for wp in self.outline:
                     cv2.circle(img_original,(wp[0],wp[1]),5,(255,0,0),-1)
 
-            if len(self.pathpnt) > 0:
-                cv2.polylines(img_original,[self.pathpnt],False,(255,255,0),2)
+            if len(self.prey_pathpnt) > 0:
+                cv2.polylines(img_original,[self.prey_pathpnt],False,(255,255,0),2)
+
+            if len(self.predator_pathpnt) > 0:
+                cv2.polylines(img_original,[self.predator_pathpnt],False,(0,255,255),2)
 
             cv2.imshow("Converted Image",img_original)#np.hstack([img_original,res]))
-            #cv2.imshow("Converted Image",np.hstack([img_original,res]))
+            # cv2.imshow("Converted Image",np.hstack([img_original,res]))
 
             k = cv2.waitKey(3)
             if k == ord('f') and len(self.waypnts)>0:
@@ -172,10 +179,15 @@ class sphero_finder:
             else:
                 lvl -= 1
 
-        self.pathpnt = []
-        for i in range(len(self.path)):
-            self.pathpnt.append(self.waypnt_dict[self.path[i]])
-        self.pathpnt = np.array(self.pathpnt)
+        self.prey_pathpnt = []
+        for i in range(len(self.prey_path)):
+            self.prey_pathpnt.append(self.waypnt_dict[self.prey_path[i]])
+        self.prey_pathpnt = np.array(self.prey_pathpnt)
+
+        self.predator_pathpnt = []
+        for i in range(len(self.predator_path)):
+            self.predator_pathpnt.append(self.waypnt_dict[self.predator_path[i]])
+        self.predator_pathpnt = np.array(self.predator_pathpnt)
         # print self.waypnt_dict
 
 def nothing(x):
@@ -190,7 +202,8 @@ def main():
     with open('/home/mikewiz/project_ws/src/maze_control/src/path.csv') as csvfile:
         readCSV = csv.reader(csvfile, delimiter=',')
         for row in readCSV:
-            ic.path.append(row[0])
+            ic.prey_path.append(row[0])
+            ic.predator_path.append(row[1])
     # print ic.path
     try:
         rospy.spin()
