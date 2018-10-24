@@ -87,7 +87,7 @@ class pidController():
         # Handle saturation
         if (u > maxSpeed):
             return maxSpeed
-        elif (u < minSpeed):
+        elif (u < minSpeed and distance>stopRadius):
 
             return minSpeed
         else:
