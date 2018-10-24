@@ -105,13 +105,14 @@ class sphero_control:
 
             # print outspeed
             else:
+                # print distance,outspeed
                 self.roll_sphero('Prey',outspeed,-angle,-self.prey_offset)
-                # rospy.sleep(0.1)
+                # rospy.sleep(0.01)
             # rospy.sleep(0.5)
-        if len(self.prey_achieved)-len(self.predator_achieved)>1:
+        if len(self.prey_achieved)-len(self.predator_achieved)>0:
             self.prey_limit = False
             self.predator_limit = True
-        elif len(self.predator_achieved)-len(self.prey_achieved)>1:
+        elif len(self.predator_achieved)-len(self.prey_achieved)>0:
             self.prey_limit = True
             self.predator_limit = False
         else:
@@ -138,15 +139,16 @@ class sphero_control:
             # print angle
 
             # if distance < 20:
-            #     prev_angle = angle
-            #     if targetnum+1 != len(self.predator_path):
-            #         xt,yt = self.predator_pathpnt[targetnum+1]
+            #     self.predator_achieved.append(self.predator_pathpnt[targetnum])
+            #     targetnum = len(self.predator_achieved)
+            #     if len(self.predator_achieved) < len(self.predator_path):
+            #         # self.roll_sphero('predator',outspeed,-(angle+180),self.predator_offset)
+            #         xt,yt = self.predator_pathpnt[targetnum]
             #         angle, distance = vector_to_target(x,y,xt,yt)
-            #         if abs(angle-prev_angle) > 50 and self.predator_check == False:
-            #             self.roll_sphero('Predator',-outspeed,-prev_angle,-self.predator_offset)
-            #             rospy.sleep(0.4)
-            #             self.predator_check = True
-            #             return
+            #         self.predator.reset()
+            #         outspeed = self.predator.getPIDSpeed(distance,self.predator_speed)
+            #         self.roll_sphero('Predator',outspeed,-angle,-self.predator_offset)
+            #         rospy.sleep(0.4)
 
             if distance < 20 and self.predator_limit == True:
                 prev_angle = angle
@@ -176,7 +178,7 @@ class sphero_control:
                 self.predator_check = False
             else:
                 self.roll_sphero('Predator',outspeed,-angle,-self.predator_offset)
-            # rospy.sleep(0.5)
+                # rospy.sleep(0.01)
 
     def roll_sphero(self,sph,speed,angle,offset):
         newTwist = Twist()
