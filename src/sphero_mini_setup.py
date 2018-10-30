@@ -50,7 +50,7 @@ def main():
     rospy.init_node('sphero_finder', anonymous=True)
     ic = sphero_setup()
     rospy.sleep(1)
-    ic.prey = sphero_mini.sphero_mini('FD:62:56:A7:AB:2B', verbosity = 1)
+    ic.prey = sphero_mini.sphero_mini('FD:62:56:A7:AB:2B', verbosity = 2)
     # ic.predator = sphero_mini.sphero_mini('FD:62:56:A7:AB:2B', verbosity = 1)
     print("Connected")
     try:
