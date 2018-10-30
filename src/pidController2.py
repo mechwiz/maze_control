@@ -71,7 +71,7 @@ class pidController():
                                  (((distance - self.prevE) / deltaT) -
                                   ((self.prevE - self.prev2E) / deltaT2))
 
-            # print speed,u
+            # print u
             # If robot has stopped moving, reset it
             if (u < resumeSpeed):
                 u = resumeSpeed
