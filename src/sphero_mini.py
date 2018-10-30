@@ -159,7 +159,7 @@ class sphero_mini():
                   commID = drivingCommands["driveWithHeading"],
                   payload = [speedL, headingH, headingL, speedH])
 
-        self.getAcknowledgement("Roll")
+        # self.getAcknowledgement("Roll")
 
     def resetHeading(self):
         '''
@@ -232,7 +232,7 @@ class sphero_mini():
         '''
         start = time.time()
         while(1):
-            self.p.waitForNotifications(0.001)
+            self.p.waitForNotifications(1)
             if time.time() - start > delay:
                 break
 
@@ -285,7 +285,7 @@ class sphero_mini():
     def getAcknowledgement(self, ack):
         #wait for correct acknowledgement to come in
         while(1):
-            self.p.waitForNotifications(0.1)
+            self.p.waitForNotifications(1)
             if self.sphero_delegate.notification_ack.split()[0] == ack:
                 if (ack == 'Battery') or (ack == 'Firmware') or (self.verbosity > 3):
                     print("\t" + self.sphero_delegate.notification_ack)
