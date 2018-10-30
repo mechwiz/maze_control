@@ -26,8 +26,8 @@ class sphero_finder:
         self.image_sub = rospy.Subscriber("/usb_cam/image_raw",Image,self.imagecb)
         self.image_sub = rospy.Subscriber("/waypoints",Waypoints,self.waypntcb)
         self.list_pub = rospy.Publisher("waypoints_fixed",Waypoints,queue_size=10)
-        self.image_pub = rospy.Publisher("center_point1",Point,queue_size=10)
-        self.image_pub2 = rospy.Publisher("center_point2",Point,queue_size=10)
+        self.image_pub = rospy.Publisher("center_point1",Point,queue_size=1)
+        self.image_pub2 = rospy.Publisher("center_point2",Point,queue_size=1)
         self.prey_color_pub = rospy.Publisher("prey/set_color",ColorRGBA,queue_size=1)
         self.predator_color_pub = rospy.Publisher("predator/set_color",ColorRGBA,queue_size=1)
 
@@ -79,7 +79,7 @@ class sphero_finder:
                 c = max(contour, key = cv2.contourArea)
                 ((x,y),radius) = cv2.minEnclosingCircle(c)
                 M = cv2.moments(c)
-                if radius > 1:
+                if radius > 3:
                     center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
                 # else:
                 #   center = (0,0)
@@ -93,7 +93,7 @@ class sphero_finder:
                 c = max(contour2, key = cv2.contourArea)
                 ((x,y),radius) = cv2.minEnclosingCircle(c)
                 M = cv2.moments(c)
-                if radius > 1:
+                if radius > 3:
                     center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
                 # else:
                 #   center = (0,0)
