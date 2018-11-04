@@ -199,7 +199,7 @@ def main():
     rospy.sleep(1)
 
     ic.prey_color_pub.publish(ColorRGBA(255,0,0,1))
-    # ic.predator_color_pub.publish(ColorRGBA(0,0,255,1))
+    ic.predator_color_pub.publish(ColorRGBA(0,0,255,1))
     with open('/home/mikewiz/project_ws/src/maze_control/src/path.csv') as csvfile:
         readCSV = csv.reader(csvfile, delimiter=',')
         for row in readCSV:

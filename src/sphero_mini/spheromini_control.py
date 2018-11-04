@@ -277,14 +277,14 @@ def main():
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
 
-    # getOffset = rospy.ServiceProxy("predator/offset",offset)
-    # rospy.wait_for_service("predator/offset")
-    # try:
-    #     predator_offset = getOffset()
+    getOffset = rospy.ServiceProxy("predator/offset",offset)
+    rospy.wait_for_service("predator/offset")
+    try:
+        predator_offset = getOffset()
 
-    #     pass
-    # except rospy.ServiceException, e:
-    #     print "Service call failed: %s"%e
+        pass
+    except rospy.ServiceException, e:
+        print "Service call failed: %s"%e
 
     rospy.init_node('sphero_control', anonymous=True)
     ic = sphero_control()
@@ -295,7 +295,7 @@ def main():
             ic.prey_path.append(row[0])
             ic.predator_path.append(row[1])
     ic.prey_offset = prey_offset.offset.data
-    # ic.predator_offset = predator_offset.offset.data
+    ic.predator_offset = predator_offset.offset.data
 
     try:
         rospy.spin()
