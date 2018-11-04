@@ -51,8 +51,9 @@ def main():
     ic = sphero_setup()
     rospy.sleep(1)
     ic.prey = sphero_mini.sphero_mini('FD:62:56:A7:AB:2B', verbosity = 2)
-    # ic.predator = sphero_mini.sphero_mini('FD:62:56:A7:AB:2B', verbosity = 1)
-    print("Connected")
+    print("Connected to Prey")
+    ic.predator = sphero_mini.sphero_mini('F0:93:98:6B:98:79', verbosity = 2)
+    print("Connected to Predator")
     try:
         rospy.spin()
     except KeyboardInterrupt:
