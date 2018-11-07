@@ -23,7 +23,7 @@ class prey_calibrate:
         self.calibrated = False
         self.waypnt_sub = rospy.Subscriber("/waypoints_fixed",Waypoints,self.waypntcb)
         self.prey_sub = rospy.Subscriber("/center_point1",Point,self.prey_cb)
-        self.prey_vel_pub = rospy.Publisher("prey/cmd_vel",Int16,queue_size=10)
+        self.prey_vel_pub = rospy.Publisher("prey/cmd_vel",Int16,queue_size=1)
         self.prey_heading_pub = rospy.Publisher("prey/set_heading",Int16,queue_size=1)
         self.prey_offset_srv = rospy.Service("prey/offset",offset,self.offset_srv)
 
@@ -35,7 +35,7 @@ class prey_calibrate:
 
     def prey_cb(self,data):
 
-        if self.calibrated == False and len(self.waypnt_dict)>0 and time.time()-self.prey_time>0.05:
+        if self.calibrated == False and len(self.waypnt_dict)>0 and time.time()-self.prey_time>0.07:
             self.prey_time = time.time()
             t = rospy.Time.now()
             time_diff = t-self.timer
@@ -120,7 +120,7 @@ class prey_calibrate:
         self.timer = rospy.Time.now()
 
 def main():
-    rospy.init_node('prey_calibrate', anonymous=True)
+    rospy.init_node('prey_calibrate', anonymous=False)
     ic = prey_calibrate()
     try:
         rospy.spin()

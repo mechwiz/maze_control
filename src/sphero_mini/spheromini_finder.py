@@ -194,7 +194,7 @@ def nothing(x):
     pass
 
 def main():
-    rospy.init_node('sphero_finder', anonymous=True)
+    rospy.init_node('sphero_finder', anonymous=False)
     ic = sphero_finder()
     rospy.sleep(1)
 

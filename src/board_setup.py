@@ -247,7 +247,7 @@ def points (p0, p1):
     return point_list
 
 def main():
-    rospy.init_node('image_overlay', anonymous=True)
+    rospy.init_node('image_overlay', anonymous=False)
     ic = image_overlay()
     try:
         rospy.spin()

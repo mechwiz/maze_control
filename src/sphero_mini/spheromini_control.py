@@ -56,7 +56,7 @@ class sphero_control:
         # print self.prey_speed
     def prey_cb(self,data):
         # print self.prey_offset
-        if len(self.prey_pathpnt) > 0 and len(self.prey_achieved) < len(self.prey_path) and np.abs(self.prey_offset) > 0 and time.time()-self.prey_time > 0.05:
+        if len(self.prey_pathpnt) > 0 and len(self.prey_achieved) < len(self.prey_path) and np.abs(self.prey_offset) > 0 and time.time()-self.prey_time > 0.07:
             self.prey_time = time.time()
             y = data.y
             x = data.x
@@ -132,7 +132,7 @@ class sphero_control:
 
     def predator_cb(self,data):
         # print self.prey_offset
-        if len(self.predator_pathpnt) > 0 and len(self.predator_achieved) < len(self.predator_path) and np.abs(self.predator_offset) > 0 and time.time()-self.predator_time > 0.05:
+        if len(self.predator_pathpnt) > 0 and len(self.predator_achieved) < len(self.predator_path) and np.abs(self.predator_offset) > 0 and time.time()-self.predator_time > 0.07:
             self.predator_time = time.time()
             y = data.y
             x = data.x
@@ -141,8 +141,8 @@ class sphero_control:
             # print targetnum
             xt,yt = self.predator_pathpnt[targetnum]
 
-            angle, distance = vector_to_target(x,y,xt,yt)
-            outspeed = self.predator.getPIDSpeed(distance,self.predator_speed)
+            angle, distance = vector_to_target(x,yt,xt,y)
+            outspeed = self.predator_cntrl.getPIDSpeed(distance)
             # print angle
 
             if distance < 20:
@@ -151,9 +151,9 @@ class sphero_control:
                 if len(self.predator_achieved) < len(self.predator_path):
                     # self.roll_sphero('predator',outspeed,-(angle+180),self.predator_offset)
                     xt,yt = self.predator_pathpnt[targetnum]
-                    angle, distance = vector_to_target(x,y,xt,yt)
-                    self.predator.reset()
-                    outspeed = self.predator.getPIDSpeed(distance,self.predator_speed)
+                    angle, distance = vector_to_target(x,yt,xt,y)
+                    self.predator_cntrl.reset()
+                    outspeed = self.predator_cntrl.getPIDSpeed(distance,self.predator_speed)
                     self.roll_sphero('Predator',outspeed,angle,self.predator_offset)
                     # rospy.sleep(0.4)
                 else:
@@ -286,7 +286,7 @@ def main():
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
 
-    rospy.init_node('sphero_control', anonymous=True)
+    rospy.init_node('sphero_control', anonymous=False)
     ic = sphero_control()
 
     with open('/home/mikewiz/project_ws/src/maze_control/src/path.csv') as csvfile:
