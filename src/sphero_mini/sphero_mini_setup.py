@@ -13,9 +13,7 @@ class sphero_setup:
         self.predator = 0
         self.prey_color_sub = rospy.Subscriber("/prey/set_color",ColorRGBA,self.prey_color)
         self.predator_color_sub = rospy.Subscriber("/predator/set_color",ColorRGBA,self.predator_color)
-        # self.prey_odm_sub = rospy.Subscriber("/prey/odom",Odometry,self.prey_odom)
         self.prey_vel_sub = rospy.Subscriber("/prey/cmd_vel",Int16,self.prey_speed)
-        # self.predator_odm_sub = rospy.Subscriber("/predator/odom",Odometry,self.predator_odom)
         self.predator_vel_sub = rospy.Subscriber("/predator/cmd_vel",Int16,self.predator_speed)
         self.prey_heading_sub = rospy.Subscriber("/prey/set_heading",Int16,self.prey_heading)
         self.predator_heading_sub = rospy.Subscriber("/predator/set_heading",Int16,self.predator_heading)
@@ -30,7 +28,7 @@ class sphero_setup:
         self.prey.roll(int(data.data),self.prey_head)
 
     def predator_speed(self, data):
-        self.predator.roll(data.data,self.predator_head)
+        self.predator.roll(int(data.data),self.predator_head)
 
     def prey_heading(self, data):
         angle = data.data
@@ -44,16 +42,28 @@ class sphero_setup:
         self.prey_head = int(angle)
 
     def predator_heading(self, data):
-        self.predator_head = data.data
+        angle = data.data
+
+        if angle < 0:
+            angle += 360
+
+        if angle > 360:
+            angle -= 360
+
+        self.predator_head = int(angle)
 
 def main():
-    rospy.init_node('sphero_finder', anonymous=True)
+    rospy.init_node('sphero_setup', anonymous=False)
     ic = sphero_setup()
     rospy.sleep(1)
+
     ic.prey = sphero_mini.sphero_mini('FD:62:56:A7:AB:2B', verbosity = 2)
     print("Connected to Prey")
+
+
     ic.predator = sphero_mini.sphero_mini('F0:93:98:6B:98:79', verbosity = 2)
     print("Connected to Predator")
+
     try:
         rospy.spin()
     except KeyboardInterrupt:
