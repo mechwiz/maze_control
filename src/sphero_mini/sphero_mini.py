@@ -276,7 +276,7 @@ class sphero_mini():
         output = b"".join([x.to_bytes(1, byteorder='big') for x in sendBytes])
 
         #send to specified characteristic:
-        characteristic.write(output, withResponse = True)
+        characteristic.write(output, withResponse = False)
 
         self.sequence += 1 # Increment sequence number (not sure that this is necessary, but probably good practice)
         if self.sequence > 255:
