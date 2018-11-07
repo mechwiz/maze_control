@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="maze_control" type="prey_mini_setup.py" name="prey_mini_setup" ns="prey" output="screen"/>
+</launch>
