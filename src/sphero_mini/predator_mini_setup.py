@@ -35,7 +35,8 @@ def main():
     ic = predatormini_setup()
     rospy.sleep(1)
 
-    ic.predator = sphero_mini.sphero_mini('F0:93:98:6B:98:79', verbosity = 1)
+    # ic.predator = sphero_mini.sphero_mini('F0:93:98:6B:98:79', verbosity = 1)
+    ic.predator = sphero_mini.sphero_mini('EF:C4:6B:A5:3A:F9', verbosity = 1)
     print("Connected to Predator")
 
     try:

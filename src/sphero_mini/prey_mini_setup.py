@@ -36,6 +36,7 @@ def main():
     rospy.sleep(1)
 
     ic.prey = sphero_mini.sphero_mini('FD:62:56:A7:AB:2B', verbosity = 1)
+    # ic.prey = sphero_mini.sphero_mini('FA:43:D0:18:52:AA', verbosity = 1)
     print("Connected to Prey")
 
     try:
