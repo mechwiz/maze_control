@@ -56,7 +56,7 @@ class sphero_control:
         # print self.prey_speed
     def prey_cb(self,data):
         # print self.prey_offset
-        if len(self.prey_pathpnt) > 0 and len(self.prey_achieved) < len(self.prey_path) and np.abs(self.prey_offset) > 0 and time.time()-self.prey_time > 0.07:
+        if len(self.prey_pathpnt) > 0 and len(self.prey_achieved) < len(self.prey_path) and np.abs(self.prey_offset) > 0 and time.time()-self.prey_time > 0.06:
             self.prey_time = time.time()
             y = data.y
             x = data.x
@@ -132,7 +132,7 @@ class sphero_control:
 
     def predator_cb(self,data):
         # print self.prey_offset
-        if len(self.predator_pathpnt) > 0 and len(self.predator_achieved) < len(self.predator_path) and np.abs(self.predator_offset) > 0 and time.time()-self.predator_time > 0.07:
+        if len(self.predator_pathpnt) > 0 and len(self.predator_achieved) < len(self.predator_path) and np.abs(self.predator_offset) > 0 and time.time()-self.predator_time > 0.06:
             self.predator_time = time.time()
             y = data.y
             x = data.x

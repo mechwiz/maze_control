@@ -35,7 +35,7 @@ class prey_calibrate:
 
     def prey_cb(self,data):
 
-        if self.calibrated == False and len(self.waypnt_dict)>0 and time.time()-self.prey_time>0.07:
+        if self.calibrated == False and len(self.waypnt_dict)>0 and time.time()-self.prey_time>0.06:
             self.prey_time = time.time()
             t = rospy.Time.now()
             time_diff = t-self.timer
