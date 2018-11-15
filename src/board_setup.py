@@ -54,6 +54,10 @@ class image_overlay:
             # upper_red = np.array([upph,upps,uppv])
             lower_red = np.array([1,0,0])
             upper_red = np.array([30,255,255])
+            # lower_red = np.array([1,34,81])
+            # upper_red = np.array([52,255,202])
+            # lower_red = np.array([10,0,0])
+            # upper_red = np.array([35,255,200])
 
             img_original = self.bridge.imgmsg_to_cv2(data, "bgr8")
             # img_original = cv2.flip(img_original,1)

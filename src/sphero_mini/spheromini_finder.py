@@ -53,10 +53,12 @@ class sphero_finder:
             # upps = cv2.getTrackbarPos('Upper Sat','Converted Image')
             # uppv= cv2.getTrackbarPos('Upper Value','Converted Image')
 
-            # lower_red2 = np.array([lowh,lows,lowv])
-            # upper_red2 = np.array([upph,upps,uppv])
+            # lower_red = np.array([lowh,lows,lowv])
+            # upper_red = np.array([upph,upps,uppv])
             lower_red = np.array([140,75,150])
             upper_red = np.array([180,170,255])
+            # lower_red = np.array([140,10,0])
+            # upper_red = np.array([180,170,255])
             # lower_red2 = np.array([70,90,175])
             # upper_red2 = np.array([130,190,255])
             lower_red2 = np.array([70,90,175])
@@ -69,7 +71,7 @@ class sphero_finder:
             hsv = cv2.cvtColor(img_original,cv2.COLOR_BGR2HSV)
             mask = cv2.inRange(hsv,lower_red, upper_red)
             mask2 = cv2.inRange(hsv,lower_red2, upper_red2)
-            # res =cv2.bitwise_and(img_original,img_original,mask= mask2)
+            res =cv2.bitwise_and(img_original,img_original,mask= mask)
 
             contour = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
             contour2 = cv2.findContours(mask2.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
@@ -79,7 +81,7 @@ class sphero_finder:
                 c = max(contour, key = cv2.contourArea)
                 ((x,y),radius) = cv2.minEnclosingCircle(c)
                 M = cv2.moments(c)
-                if radius > 3:
+                if radius > 1:
                     center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
                 # else:
                 #   center = (0,0)
@@ -121,7 +123,7 @@ class sphero_finder:
             if len(self.predator_pathpnt) > 0:
                 cv2.polylines(img_original,[self.predator_pathpnt],False,(0,255,255),2)
 
-            cv2.imshow("Converted Image",img_original)#np.hstack([img_original,res]))
+            cv2.imshow("Converted Image",img_original)
             # cv2.imshow("Converted Image",np.hstack([img_original,res]))
 
             k = cv2.waitKey(3)
