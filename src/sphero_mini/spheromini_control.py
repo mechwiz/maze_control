@@ -63,7 +63,7 @@ class sphero_control:
         # print self.prey_speed
     def prey_cb(self,data):
         # print self.prey_offset
-        if len(self.prey_pathpnt) > 0 and len(self.prey_achieved) < len(self.prey_path) and np.abs(self.prey_offset) > 0 and time.time()-self.prey_time > 0.06:
+        if len(self.prey_pathpnt) > 0 and len(self.prey_achieved) < len(self.prey_path) and np.abs(self.prey_offset) > 0 and time.time()-self.prey_time > 0.07:
             self.prey_time = time.time()
             y = data.y
             x = data.x
@@ -72,13 +72,14 @@ class sphero_control:
             # print targetnum
             xt,yt = self.prey_pathpnt[targetnum]
             self.prey_percent = self.get_precentTraj(targetnum,'prey',[xt,yt],[x,y])
+            # print "prey percent: ",self.prey_percent
 
             angle, distance = vector_to_target(x,yt,xt,y)
             outspeed = self.prey_cntrl.getPIDSpeed(distance) - self.prey_error
             outspeed = max(outspeed,0)
             # print angle, distance
 
-            if distance < 20:
+            if distance < 40:
                 self.prey_achieved.append(self.prey_pathpnt[targetnum])
                 targetnum = len(self.prey_achieved)
                 if len(self.prey_achieved) < len(self.prey_path):
@@ -125,7 +126,7 @@ class sphero_control:
 
 
         if self.prey_percent > 0 and self.predator_percent > 0:
-            error = self.prey_percent - self.predator_percent
+            error = self.predator_percent - self.prey_percent
 
             if error > 0:
                 self.predator_error = 0
@@ -150,7 +151,7 @@ class sphero_control:
 
     def predator_cb(self,data):
         # print self.prey_offset
-        if len(self.predator_pathpnt) > 0 and len(self.predator_achieved) < len(self.predator_path) and np.abs(self.predator_offset) > 0 and time.time()-self.predator_time > 0.06:
+        if len(self.predator_pathpnt) > 0 and len(self.predator_achieved) < len(self.predator_path) and np.abs(self.predator_offset) > 0 and time.time()-self.predator_time > 0.07:
             self.predator_time = time.time()
             y = data.y
             x = data.x
@@ -159,13 +160,14 @@ class sphero_control:
             # print targetnum
             xt,yt = self.predator_pathpnt[targetnum]
             self.predator_percent = self.get_precentTraj(targetnum,'predator',[xt,yt],[x,y])
+            # print "predator percent: ", self.predator_percent
 
             angle, distance = vector_to_target(x,yt,xt,y)
             outspeed = self.predator_cntrl.getPIDSpeed(distance) - self.predator_error
             outspeed = max(outspeed,0)
             # print angle
 
-            if distance < 20:
+            if distance < 40:
                 self.predator_achieved.append(self.predator_pathpnt[targetnum])
                 targetnum = len(self.predator_achieved)
                 if len(self.predator_achieved) < len(self.predator_path):
@@ -345,8 +347,8 @@ def main():
     with open('/home/mikewiz/project_ws/src/maze_control/src/path.csv') as csvfile:
         readCSV = csv.reader(csvfile, delimiter=',')
         for row in readCSV:
-            ic.prey_path.append(row[0])
-            ic.predator_path.append(row[1])
+            ic.prey_path.append(row[1])
+            ic.predator_path.append(row[0])
     ic.prey_offset = prey_offset.offset.data
     ic.predator_offset = predator_offset.offset.data
 

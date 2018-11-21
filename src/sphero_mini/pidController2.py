@@ -22,8 +22,8 @@ class pidController():
     def reset(self):
         self.isRunning = False
 
-    def getPIDSpeed(self, distance, Kp=0.1, Ki=0, Kd=0,
-                    stopRadius=20, maxSpeed=80, minSpeed=40, resumeSpeed=40):
+    def getPIDSpeed(self, distance, Kp=0.2, Ki=0, Kd=0,
+                    stopRadius=40, maxSpeed=80, minSpeed=40, resumeSpeed=40):
 
         """
             Returns a speed value (0 - 255) for based on distance to target
