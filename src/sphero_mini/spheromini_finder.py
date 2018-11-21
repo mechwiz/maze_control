@@ -55,8 +55,8 @@ class sphero_finder:
 
             # lower_red = np.array([lowh,lows,lowv])
             # upper_red = np.array([upph,upps,uppv])
-            lower_red = np.array([140,75,150])
-            upper_red = np.array([180,170,255])
+            # lower_red = np.array([140,75,150])
+            # upper_red = np.array([180,170,255])
             # lower_red = np.array([140,10,0])
             # upper_red = np.array([180,170,255])
             # lower_red2 = np.array([70,90,175])
@@ -66,12 +66,18 @@ class sphero_finder:
             # lower_red2 = np.array([0,180,125])
             # upper_red2 = np.array([10,255,255])
 
+            # lower_red = np.array([140,10,150])
+            # upper_red = np.array([180,170,255])
+
+            lower_red = np.array([45,10,150])
+            upper_red = np.array([100,170,255])
+
             img_original = self.bridge.imgmsg_to_cv2(data, "bgr8")
             # img_original = cv2.flip(img_original,1)
             hsv = cv2.cvtColor(img_original,cv2.COLOR_BGR2HSV)
             mask = cv2.inRange(hsv,lower_red, upper_red)
             mask2 = cv2.inRange(hsv,lower_red2, upper_red2)
-            res =cv2.bitwise_and(img_original,img_original,mask= mask)
+            # res =cv2.bitwise_and(img_original,img_original,mask= mask)
 
             contour = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
             contour2 = cv2.findContours(mask2.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
@@ -81,7 +87,7 @@ class sphero_finder:
                 c = max(contour, key = cv2.contourArea)
                 ((x,y),radius) = cv2.minEnclosingCircle(c)
                 M = cv2.moments(c)
-                if radius > 1:
+                if radius > 3:
                     center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
                 # else:
                 #   center = (0,0)
@@ -200,7 +206,7 @@ def main():
     ic = sphero_finder()
     rospy.sleep(1)
 
-    ic.prey_color_pub.publish(ColorRGBA(255,0,0,1))
+    ic.prey_color_pub.publish(ColorRGBA(0,255,0,1))
     ic.predator_color_pub.publish(ColorRGBA(0,0,255,1))
     with open('/home/mikewiz/project_ws/src/maze_control/src/path.csv') as csvfile:
         readCSV = csv.reader(csvfile, delimiter=',')
