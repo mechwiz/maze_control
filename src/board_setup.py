@@ -26,7 +26,7 @@ class image_overlay:
         self.avgpnts6x = []
         self.avgpnts6y = []
         self.bridge = CvBridge()
-        self.image_sub = rospy.Subscriber("/usb_cam/image_raw",Image,self.imagecb)
+        self.image_sub = rospy.Subscriber("/combined_image",Image,self.imagecb)
         self.list_pub = rospy.Publisher("waypoints",Waypoints,queue_size=10)
 
     def imagecb(self,data):
@@ -54,12 +54,10 @@ class image_overlay:
             # upper_red = np.array([upph,upps,uppv])
             # lower_red = np.array([1,0,0])
             # upper_red = np.array([30,255,255])
-            # lower_red = np.array([1,34,81])
-            # upper_red = np.array([52,255,202])
+            lower_red = np.array([1,34,81])
+            upper_red = np.array([52,255,202])
             # lower_red = np.array([10,0,0])
             # upper_red = np.array([35,255,200])
-            lower_red = np.array([1,34,50])
-            upper_red = np.array([52,255,255])
 
             img_original = self.bridge.imgmsg_to_cv2(data, "bgr8")
             # img_original = cv2.flip(img_original,1)
