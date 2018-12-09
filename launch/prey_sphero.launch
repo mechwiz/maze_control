@@ -1,4 +1,0 @@
-<launch>
-    <rosparam command="load" file="$(find maze_control)/launch/param/bt_addr1.yaml" ns="prey" />
-    <node pkg="sphero_node" type="sphero.py" name="sphero" ns="prey" output="screen"/>
-</launch>
