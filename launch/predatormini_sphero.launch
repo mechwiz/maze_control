@@ -1,3 +1,0 @@
-<launch>
-    <node pkg="maze_control" type="predator_mini_setup.py" name="predator_mini_setup" ns="predator" output="screen"/>
-</launch>
