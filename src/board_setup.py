@@ -25,6 +25,10 @@ class image_overlay:
         self.avgpnts5y = []
         self.avgpnts6x = []
         self.avgpnts6y = []
+        self.avgpnts7x = []
+        self.avgpnts7y = []
+        self.avgpnts8x = []
+        self.avgpnts8y = []
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber("/usb_cam/image_raw",Image,self.imagecb)
         self.list_pub = rospy.Publisher("waypoints",Waypoints,queue_size=10)
@@ -76,7 +80,7 @@ class image_overlay:
                 hull = cv2.convexHull(cnts,clockwise=True)
                 approx = cv2.approxPolyDP(hull,peri,True)
 
-                if len(approx) >= 6:
+                if len(approx) >= 8:
 
                     self.avgpnts1x.append(approx[0][0][0])
                     self.avgpnts1y.append(approx[0][0][1])
@@ -90,6 +94,10 @@ class image_overlay:
                     self.avgpnts5y.append(approx[4][0][1])
                     self.avgpnts6x.append(approx[5][0][0])
                     self.avgpnts6y.append(approx[5][0][1])
+                    self.avgpnts7x.append(approx[6][0][0])
+                    self.avgpnts7y.append(approx[6][0][1])
+                    self.avgpnts8x.append(approx[7][0][0])
+                    self.avgpnts8y.append(approx[7][0][1])
 
                     cv2.drawContours(img_original, [hull], -1, (0, 255, 0), 3)
                     # res = cv2.drawContours(res, [hull], -1, (0, 255, 0), 3)
@@ -102,6 +110,9 @@ class image_overlay:
                         self.avgpnt.append([stats.mode(self.avgpnts4x)[0][0],stats.mode(self.avgpnts4y)[0][0]])
                         self.avgpnt.append([stats.mode(self.avgpnts5x)[0][0],stats.mode(self.avgpnts5y)[0][0]])
                         self.avgpnt.append([stats.mode(self.avgpnts6x)[0][0],stats.mode(self.avgpnts6y)[0][0]])
+                        self.avgpnt.append([stats.mode(self.avgpnts7x)[0][0],stats.mode(self.avgpnts7y)[0][0]])
+                        self.avgpnt.append([stats.mode(self.avgpnts8x)[0][0],stats.mode(self.avgpnts8y)[0][0]])
+
                         # print self.avgpnt
                         self.avgpnts1x = []
                         self.avgpnts1y = []
@@ -115,6 +126,10 @@ class image_overlay:
                         self.avgpnts5y = []
                         self.avgpnts6x = []
                         self.avgpnts6y = []
+                        self.avgpnts7x = []
+                        self.avgpnts7y = []
+                        self.avgpnts8x = []
+                        self.avgpnts8y = []
 
                     if len(self.avgpnt)>1:
                         for pnt in self.avgpnt:
@@ -122,8 +137,8 @@ class image_overlay:
 
                         allpts = []
 
-                        tl = points(self.avgpnt[5],self.avgpnt[0])
-                        skp = len(tl)/5.0
+                        tl = points(self.avgpnt[0],self.avgpnt[7])
+                        skp = len(tl)/9.0
                         cnt = skp
                         tla = []
                         while cnt < len(tl)-1:
@@ -131,38 +146,8 @@ class image_overlay:
                             # cv2.circle(img_original,(wp[0],wp[1]),5,(0,0,255),2)
                             cnt+=skp
 
-                        tr = points(self.avgpnt[4],self.avgpnt[3])
-                        skp = len(tr)/5.0
-                        cnt = skp
-                        tra = []
-                        while cnt < len(tr)-1:
-                            tra.append(tr[int(np.round(cnt))])
-                            # cv2.circle(img_original,(wp[0],wp[1]),5,(0,0,255),2)
-                            cnt+=skp
-
-                        lvl = 6.0
-                        for i in range(4):
-                            top = points(tla[i],tra[i])
-                            skp = len(top)/lvl
-                            cnt = skp
-                            while cnt < len(top)-1:
-                                wp = top[int(np.round(cnt))]
-                                allpts.append(IntList(wp))
-                                cv2.circle(img_original,(wp[0],wp[1]),5,(0,0,255),-1)
-                                cnt+=skp
-                            lvl+=1
-
-                        mid = points(self.avgpnt[0],self.avgpnt[3])
-                        skp = len(mid)/10.0
-                        cnt = skp
-                        while cnt < len(mid)-1:
-                            wp = mid[int(np.round(cnt))]
-                            allpts.append(IntList(wp))
-                            cv2.circle(img_original,(wp[0],wp[1]),5,(0,0,255),-1)
-                            cnt+=skp
-
-                        bl = points(self.avgpnt[0],self.avgpnt[1])
-                        skp = len(bl)/5.0
+                        bl = points(self.avgpnt[1],self.avgpnt[2])
+                        skp = len(bl)/9.0
                         cnt = skp
                         bla = []
                         while cnt < len(bl)-1:
@@ -170,29 +155,85 @@ class image_overlay:
                             # cv2.circle(img_original,(wp[0],wp[1]),5,(0,0,255),2)
                             cnt+=skp
 
-                        br = points(self.avgpnt[3],self.avgpnt[2])
-                        skp = len(br)/5.0
-                        cnt = skp
-                        bra = []
-                        while cnt < len(br)-1:
-                            bra.append(br[int(np.round(cnt))])
-                            # cv2.circle(img_original,(wp[0],wp[1]),5,(0,0,255),2)
-                            cnt+=skp
-
-                        lvl = 9.0
-                        for i in range(4):
-                            bot = points(bla[i],bra[i])
-                            skp = len(bot)/lvl
+                        lvl = 10.0
+                        for i in range(8):
+                            left = points(bla[i],tla[i])
+                            skp = len(left)/lvl
                             cnt = skp
-                            while cnt < len(bot)-1:
-                                wp = bot[int(np.round(cnt))]
+                            while cnt < len(left)-1:
+                                wp = left[int(np.round(cnt))]
                                 allpts.append(IntList(wp))
                                 cv2.circle(img_original,(wp[0],wp[1]),5,(0,0,255),-1)
                                 cnt+=skp
-                            lvl-=1
+                            lvl+=1
+
+                        tm = points(self.avgpnt[7],self.avgpnt[6])
+                        skp = len(tm)/9.0
+                        cnt = skp
+                        tma = []
+                        while cnt < len(tm)-1:
+                            tma.append(tm[int(np.round(cnt))])
+                            # cv2.circle(img_original,(wp[0],wp[1]),5,(0,0,255),2)
+                            cnt+=skp
+
+                        bm = points(self.avgpnt[2],self.avgpnt[3])
+                        skp = len(bm)/9.0
+                        cnt = skp
+                        bma = []
+                        while cnt < len(bm)-1:
+                            tma.append(bm[int(np.round(cnt))])
+                            # cv2.circle(img_original,(wp[0],wp[1]),5,(0,0,255),2)
+                            cnt+=skp
+
+                        lvl = 18.0
+                        for i in range(9):
+                            center = points(bma[i],tma[i])
+                            skp = len(center)/lvl
+                            cnt = skp
+                            while cnt < len(center)-1:
+                                wp = center[int(np.round(cnt))]
+                                allpts.append(IntList(wp))
+                                cv2.circle(img_original,(wp[0],wp[1]),5,(0,0,255),-1)
+                                cnt+=skp
+                            if lvl == 18.0:
+                                lvl-=1
+                            else:
+                                lvl+=1
+
+                        tr = points(self.avgpnt[5],self.avgpnt[6])
+                        skp = len(tr)/9.0
+                        cnt = skp
+                        tra = []
+                        while cnt < len(tr)-1:
+                            tra.append(tr[int(np.round(cnt))])
+                            # cv2.circle(img_original,(wp[0],wp[1]),5,(0,0,255),2)
+                            cnt+=skp
+
+                        br = points(self.avgpnt[4],self.avgpnt[3])
+                        skp = len(br)/9.0
+                        cnt = skp
+                        bra = []
+                        while cnt < len(tr)-1:
+                            bra.append(tr[int(np.round(cnt))])
+                            # cv2.circle(img_original,(wp[0],wp[1]),5,(0,0,255),2)
+                            cnt+=skp
+
+                        lvl = 10.0
+                        for i in range(8):
+                            right = points(bra[i],tra[i])
+                            skp = len(right)/lvl
+                            cnt = skp
+                            while cnt < len(right)-1:
+                                wp = right[int(np.round(cnt))]
+                                allpts.append(IntList(wp))
+                                cv2.circle(img_original,(wp[0],wp[1]),5,(0,0,255),-1)
+                                cnt+=skp
+                            lvl+=1
+
+
 
                         self.allpts = allpts
-                        for i in range(6):
+                        for i in range(8):
                             self.allpts.append(IntList(self.avgpnt[i]))
                         # print allpts
 
