@@ -22,14 +22,91 @@ class sphero_finder:
         self.predator_path = []
         self.predator_pathpnt = []
         self.outline = []
+        self.warpedpic = None
+        self.warped_prey = []
+        self.warped_predator = []
         self.bridge = CvBridge()
-        self.image_sub = rospy.Subscriber("/usb_cam/image_raw",Image,self.imagecb)
-        self.image_sub = rospy.Subscriber("/waypoints",Waypoints,self.waypntcb)
+        self.image_sub = rospy.Subscriber("/combined_image",Image,self.imagecb)
+        self.image_sub2 = rospy.Subscriber("/warped_image",Image,self.warpedcb)
+        self.waypnts_sub = rospy.Subscriber("/waypoints",Waypoints,self.waypntcb)
         self.list_pub = rospy.Publisher("waypoints_fixed",Waypoints,queue_size=10)
         self.image_pub = rospy.Publisher("center_point1",Point,queue_size=1)
         self.image_pub2 = rospy.Publisher("center_point2",Point,queue_size=1)
         self.prey_color_pub = rospy.Publisher("prey/set_color",ColorRGBA,queue_size=1)
         self.predator_color_pub = rospy.Publisher("predator/set_color",ColorRGBA,queue_size=1)
+
+    def warpedcb(self,data):
+        try:
+            lower_green = np.array([1,125,255])
+            upper_green = np.array([100,255,255])
+            lower_red = np.array([133,30,250])
+            upper_red = np.array([153,210,255])
+
+            img_original = self.bridge.imgmsg_to_cv2(data, "bgr8")
+            # img_original = cv2.flip(img_original,1)
+            hsv = cv2.cvtColor(img_original,cv2.COLOR_BGR2HSV)
+            mask = cv2.inRange(hsv,lower_green, upper_green)
+            mask2 = cv2.inRange(hsv,lower_red, upper_red)
+            # res =cv2.bitwise_and(img_original,img_original,mask= mask2)
+
+            contour = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
+            contour2 = cv2.findContours(mask2.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
+            center = None
+
+            if len(contour) > 0 and len(self.waypnts)>0:
+                for c in contour:
+                    ((x,y),radius) = cv2.minEnclosingCircle(c)
+                    if cv2.pointPolygonTest(np.array(self.outline),(int(x),int(y)),False)>0:
+                        # M = cv2.moments(c)
+
+                        # print radius, cv2.pointPolygonTest(np.array(self.outline),(int(x),int(y)),False), (x,y)
+                        if radius > 3:
+                            # center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+                        # else:
+                        #   center = (0,0)
+                            # res = cv2.circle(res,(int(x),int(y)),int(radius),(0,255,0),2)
+                            # img_original = cv2.circle(img_original,(int(x),int(y)),int(radius),(0,255,0),2)
+
+                          #print center
+                            # self.image_pub.publish(int(x),int(y),0)
+                            self.warped_prey = [int(x),int(y)]
+                            break
+
+            else:
+                self.warped_prey = []
+
+            if len(contour2) > 0 and len(self.waypnts)>0:
+                for c in contour2:
+                    ((x,y),radius) = cv2.minEnclosingCircle(c)
+                    if cv2.pointPolygonTest(np.array(self.outline),(int(x),int(y)),False)>0:
+                        # M = cv2.moments(c)
+
+                # c = max(contour2, key = cv2.contourArea)
+                # ((x,y),radius) = cv2.minEnclosingCircle(c)
+                # M = cv2.moments(c)
+                # print radius, cv2.pointPolygonTest(np.array(self.outline),(int(x),int(y)),True)
+                        if radius > 3:
+                            # center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+                        # else:
+                        #   center = (0,0)
+                            # res = cv2.circle(res,(int(x),int(y)),int(radius),(255,0,0),2)
+                            # img_original = cv2.circle(img_original,(int(x),int(y)),int(radius),(255,0,0),2)
+
+                          #print center
+                            # self.image_pub2.publish(int(x),int(y),0)
+                            self.warped_predator = [int(x),int(y)]
+                            break
+            else:
+                self.warped_predator = []
+
+            # self.warpedpic = img_original
+            # cv2.imshow("Warped converted Image",img_original)
+            # # cv2.imshow("Converted Image",np.hstack([img_original,res]))
+
+            # cv2.waitKey(3)
+
+        except CvBridgeError, e:
+            print("==[CAMERA MANAGER]==", e)
 
     def imagecb(self,data):
         try:
@@ -65,66 +142,80 @@ class sphero_finder:
             # upper_red2 = np.array([120,217,255])
             # lower_red2 = np.array([0,180,125])
             # upper_red2 = np.array([10,255,255])
-            lower_red2 = np.array([100,25,200])
-            upper_red2 = np.array([164,255,255])
+            # lower_red2 = np.array([100,25,200])
+            # upper_red2 = np.array([164,255,255])
 
             # lower_red = np.array([140,10,150])
             # upper_red = np.array([180,170,255])
 
             # lower_red = np.array([45,10,150])
             # upper_red = np.array([100,170,255])
-            lower_red = np.array([80,30,220])
-            upper_red = np.array([100,255,255])
+            # lower_red = np.array([80,30,220])
+            # upper_red = np.array([100,255,255])
+            lower_green = np.array([1,125,255])
+            upper_green = np.array([100,255,255])
+            lower_red = np.array([133,30,250])
+            upper_red = np.array([153,210,255])
+            # lower_red = np.array([135,35,205])
+            # upper_red = np.array([168,255,255])
 
             img_original = self.bridge.imgmsg_to_cv2(data, "bgr8")
             # img_original = cv2.flip(img_original,1)
             hsv = cv2.cvtColor(img_original,cv2.COLOR_BGR2HSV)
-            mask = cv2.inRange(hsv,lower_red, upper_red)
-            mask2 = cv2.inRange(hsv,lower_red2, upper_red2)
-            res =cv2.bitwise_and(img_original,img_original,mask= mask)
+            mask = cv2.inRange(hsv,lower_green, upper_green)
+            mask2 = cv2.inRange(hsv,lower_red, upper_red)
+            # res =cv2.bitwise_and(img_original,img_original,mask= mask2)
 
             contour = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
             contour2 = cv2.findContours(mask2.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
             center = None
 
-            if len(contour) > 0 and len(self.waypnts)>0:
-                for c in contour:
-                    ((x,y),radius) = cv2.minEnclosingCircle(c)
-                    if cv2.pointPolygonTest(np.array(self.outline),(int(x),int(y)),False)>0:
-                        M = cv2.moments(c)
+            if len(self.waypnts)>0:
+                if len(contour) > 0:
+                    for c in contour:
+                        ((x,y),radius) = cv2.minEnclosingCircle(c)
+                        if cv2.pointPolygonTest(np.array(self.outline),(int(x),int(y)),False)>0:
+                            # M = cv2.moments(c)
 
-                        # print radius, cv2.pointPolygonTest(np.array(self.outline),(int(x),int(y)),False), (x,y)
-                        if radius > 3:
-                            center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-                        # else:
-                        #   center = (0,0)
-                            # res = cv2.circle(res,(int(center[0]),int(center[1])),int(radius),(0,255,0),2)
-                            img_original = cv2.circle(img_original,(int(center[0]),int(center[1])),int(radius),(0,255,0),2)
+                            # print radius, cv2.pointPolygonTest(np.array(self.outline),(int(x),int(y)),False), (x,y)
+                            if radius > 3:
+                                # center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+                            # else:
+                            #   center = (0,0)
+                                # res = cv2.circle(res,(int(x),int(y)),int(radius),(0,255,0),2)
+                                img_original = cv2.circle(img_original,(int(x),int(y)),int(radius),(0,255,0),2)
 
-                          #print center
-                            self.image_pub.publish(center[0],center[1],0)
-                            break
+                              #print center
+                                self.image_pub.publish(int(x),int(y),0)
+                                break
+                elif len(self.warped_prey)>0:
+                    img_original = cv2.circle(img_original,(self.warped_prey[0],self.warped_prey[1]),int(radius),(0,255,0),2)
+                    self.image_pub.publish(self.warped_prey[0],self.warped_prey[1],0)
 
-            if len(contour2) > 0 and len(self.waypnts)>0:
-                for c in contour2:
-                    ((x,y),radius) = cv2.minEnclosingCircle(c)
-                    if cv2.pointPolygonTest(np.array(self.outline),(int(x),int(y)),False)>0:
-                        M = cv2.moments(c)
+            if len(self.waypnts)>0:
+                if len(contour2) > 0:
+                    for c in contour2:
+                        ((x,y),radius) = cv2.minEnclosingCircle(c)
+                        if cv2.pointPolygonTest(np.array(self.outline),(int(x),int(y)),False)>0:
+                            # M = cv2.moments(c)
 
-                # c = max(contour2, key = cv2.contourArea)
-                # ((x,y),radius) = cv2.minEnclosingCircle(c)
-                # M = cv2.moments(c)
-                # print radius, cv2.pointPolygonTest(np.array(self.outline),(int(x),int(y)),True)
-                        if radius > 3:
-                            center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-                        # else:
-                        #   center = (0,0)
-                            # res = cv2.circle(res,(int(center[0]),int(center[1])),int(radius),(255,0,0),2)
-                            img_original = cv2.circle(img_original,(int(center[0]),int(center[1])),int(radius),(255,0,0),2)
+                    # c = max(contour2, key = cv2.contourArea)
+                    # ((x,y),radius) = cv2.minEnclosingCircle(c)
+                    # M = cv2.moments(c)
+                    # print radius, cv2.pointPolygonTest(np.array(self.outline),(int(x),int(y)),True)
+                            if radius > 3:
+                                # center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+                            # else:
+                            #   center = (0,0)
+                                # res = cv2.circle(res,(int(x),int(y)),int(radius),(255,0,0),2)
+                                img_original = cv2.circle(img_original,(int(x),int(y)),int(radius),(255,0,0),2)
 
-                          #print center
-                            self.image_pub2.publish(center[0],center[1],0)
-                            break
+                              #print center
+                                self.image_pub2.publish(int(x),int(y),0)
+                                break
+                elif len(self.warped_predator)>0:
+                        img_original = cv2.circle(img_original,(self.warped_predator[0],self.warped_predator[1]),int(radius),(255,0,0),2)
+                        self.image_pub2.publish(self.warped_predator[0],self.warped_predator[1],0)
 
             if len(self.waypnts) > 0:
                 for wp in self.waypnts:
@@ -144,7 +235,9 @@ class sphero_finder:
             if len(self.predator_pathpnt) > 0:
                 cv2.polylines(img_original,[self.predator_pathpnt],False,(0,255,255),2)
 
-            cv2.imshow("Converted Image",img_original)
+            cv2.imshow("Converted Image2",img_original)
+            if self.warpedpic is not None:
+                cv2.imshow("Warped pic",self.warpedpic)
             # cv2.imshow("Converted Image",np.hstack([img_original,res]))
 
             k = cv2.waitKey(3)
@@ -258,7 +351,7 @@ def main():
     rospy.sleep(1)
 
     ic.prey_color_pub.publish(ColorRGBA(0,255,0,1))
-    ic.predator_color_pub.publish(ColorRGBA(255,0,255,1))
+    ic.predator_color_pub.publish(ColorRGBA(100,0,100,1))
     with open('/home/mikewiz/project_ws/src/maze_control/src/path.csv') as csvfile:
         readCSV = csv.reader(csvfile, delimiter=',')
         for row in readCSV:
