@@ -55,7 +55,7 @@ class image_overlay:
         self.polypnts8x = []
         self.polypnts8y = []
         self.bridge = CvBridge()
-        self.image_sub = rospy.Subscriber("/usb_cam/image_raw",Image,self.imagecb)
+        self.image_sub = rospy.Subscriber("/combined_image",Image,self.imagecb)
         self.list_pub = rospy.Publisher("waypoints",Waypoints,queue_size=10)
 
     def imagecb(self,data):
@@ -79,19 +79,21 @@ class image_overlay:
             # uppv= cv2.getTrackbarPos('Upper Value','Converted Image')
             # switch = '0 : OFF \n1 : ON'
             # cv2.createTrackbar(switch, 'Converted Image',0,1,nothing)
-            # lower_birch = np.array([lowh,lows,lowv])
-            # upper_birch = np.array([upph,upps,uppv])
-            # lower_red = np.array([1,0,0])
-            # upper_red = np.array([30,255,255])
-            # lower_red = np.array([1,34,81])
+            # lower_red = np.array([lowh,lows,lowv])
+            # upper_red = np.array([upph,upps,uppv])
+            lower_birch = np.array([1,0,60])
+            upper_birch = np.array([50,255,255])
+            # # lower_red = np.array([1,34,81])
             # upper_red = np.array([52,255,202])
             # lower_red = np.array([10,0,0])
             # upper_red = np.array([35,255,200])
             # lower_red = np.array([1,34,50])
             # upper_red = np.array([52,255,255])
-            lower_birch = np.array([1,0,75]) #[1,20,120]
-            upper_birch = np.array([33,128,255])
-            lower_red = np.array([50,85,100])
+            # lower_birch = np.array([1,0,75]) #[1,20,120]
+            # upper_birch = np.array([33,128,255])
+            # lower_red = np.array([50,85,100])
+            # upper_red = np.array([180,255,255])
+            lower_red = np.array([120,120,150])
             upper_red = np.array([180,255,255])
 
             img_original = self.bridge.imgmsg_to_cv2(data, "bgr8")
@@ -99,7 +101,7 @@ class image_overlay:
             hsv = cv2.cvtColor(img_original,cv2.COLOR_BGR2HSV)
             maskdots = cv2.inRange(hsv,lower_red, upper_red)
             maskbirch = cv2.inRange(hsv,lower_birch, upper_birch)
-            # res =cv2.bitwise_and(img_original,img_original,mask= maskbirch)
+            # res =cv2.bitwise_and(img_original,img_original,mask= maskdots)
 
             contour_dots = cv2.findContours(maskdots.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
             contour_maze = cv2.findContours(maskbirch.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
@@ -170,6 +172,7 @@ class image_overlay:
                       # center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
                       # print int(x),int(y)
                       cv2.circle(img_original,(int(x),int(y)),int(radius),(0,255,0),2)
+                      # cv2.circle(res,(int(x),int(y)),int(radius),(0,255,0),2)
                       goodlist.append([int(x),int(y)])
 
                 if len(goodlist) == 12:
@@ -388,28 +391,28 @@ class image_overlay:
 
                 tmh = points(self.avgpnt[11],self.avgpnt[8])
                 skp = len(tmh)/4.0
-                cnt = 0
+                cnt = skp
                 tmha = []
                 while cnt < len(tmh)-1:
                     tmha.append(tmh[int(np.round(cnt))])
                     # cv2.circle(img_original,(wp[0],wp[1]),5,(0,0,255),2)
                     cnt+=skp
-                tmha.append(tmh[-1])
+                # tmha.append(tmh[-1])
 
                 bmh = points(self.avgpnt[2],self.avgpnt[5])
                 skp = len(bmh)/4.0
-                cnt = 0
+                cnt = skp
                 bmha = []
                 while cnt < len(bmh)-1:
                     bmha.append(bmh[int(np.round(cnt))])
                     # cv2.circle(img_original,(wp[0],wp[1]),5,(0,0,255),2)
                     cnt+=skp
-                bmha.append(bmh[-1])
+                # bmha.append(bmh[-1])
 
                 lvl = 15.0
                 low = True
                 i = 0
-                j = 1
+                j = 0
                 for k in range(7):
                     if low == True:
                         center = points(bmla[i],tmla[i])
