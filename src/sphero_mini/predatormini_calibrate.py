@@ -150,7 +150,7 @@ class predator_calibrate:
                 lvl += 1
             else:
                 lvl -= 1
-                if alt_cnt < 4
+                if alt_cnt < 4:
                     change = False
                     alt_cnt+=1
 

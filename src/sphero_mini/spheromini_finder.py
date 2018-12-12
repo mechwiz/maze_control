@@ -61,55 +61,70 @@ class sphero_finder:
             # upper_red = np.array([180,170,255])
             # lower_red2 = np.array([70,90,175])
             # upper_red2 = np.array([130,190,255])
-            lower_red2 = np.array([70,90,175])
-            upper_red2 = np.array([120,217,255])
+            # lower_red2 = np.array([70,90,175])
+            # upper_red2 = np.array([120,217,255])
             # lower_red2 = np.array([0,180,125])
             # upper_red2 = np.array([10,255,255])
+            lower_red2 = np.array([100,25,200])
+            upper_red2 = np.array([164,255,255])
 
             # lower_red = np.array([140,10,150])
             # upper_red = np.array([180,170,255])
 
-            lower_red = np.array([45,10,150])
-            upper_red = np.array([100,170,255])
+            # lower_red = np.array([45,10,150])
+            # upper_red = np.array([100,170,255])
+            lower_red = np.array([80,30,220])
+            upper_red = np.array([100,255,255])
 
             img_original = self.bridge.imgmsg_to_cv2(data, "bgr8")
             # img_original = cv2.flip(img_original,1)
             hsv = cv2.cvtColor(img_original,cv2.COLOR_BGR2HSV)
             mask = cv2.inRange(hsv,lower_red, upper_red)
             mask2 = cv2.inRange(hsv,lower_red2, upper_red2)
-            # res =cv2.bitwise_and(img_original,img_original,mask= mask)
+            res =cv2.bitwise_and(img_original,img_original,mask= mask)
 
             contour = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
             contour2 = cv2.findContours(mask2.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
             center = None
 
-            if len(contour) > 0:
-                c = max(contour, key = cv2.contourArea)
-                ((x,y),radius) = cv2.minEnclosingCircle(c)
-                M = cv2.moments(c)
-                if radius > 3:
-                    center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-                # else:
-                #   center = (0,0)
-                    # res = cv2.circle(res,(int(center[0]),int(center[1])),int(radius),(0,255,0),2)
-                    img_original = cv2.circle(img_original,(int(center[0]),int(center[1])),int(radius),(0,255,0),2)
+            if len(contour) > 0 and len(self.waypnts)>0:
+                for c in contour:
+                    ((x,y),radius) = cv2.minEnclosingCircle(c)
+                    if cv2.pointPolygonTest(np.array(self.outline),(int(x),int(y)),False)>0:
+                        M = cv2.moments(c)
 
-                  #print center
-                    self.image_pub.publish(center[0],center[1],0)
+                        # print radius, cv2.pointPolygonTest(np.array(self.outline),(int(x),int(y)),False), (x,y)
+                        if radius > 3:
+                            center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+                        # else:
+                        #   center = (0,0)
+                            # res = cv2.circle(res,(int(center[0]),int(center[1])),int(radius),(0,255,0),2)
+                            img_original = cv2.circle(img_original,(int(center[0]),int(center[1])),int(radius),(0,255,0),2)
 
-            if len(contour2) > 0:
-                c = max(contour2, key = cv2.contourArea)
-                ((x,y),radius) = cv2.minEnclosingCircle(c)
-                M = cv2.moments(c)
-                if radius > 3:
-                    center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-                # else:
-                #   center = (0,0)
-                    # res = cv2.circle(res,(int(center[0]),int(center[1])),int(radius),(255,0,0),2)
-                    img_original = cv2.circle(img_original,(int(center[0]),int(center[1])),int(radius),(255,0,0),2)
+                          #print center
+                            self.image_pub.publish(center[0],center[1],0)
+                            break
 
-                  #print center
-                    self.image_pub2.publish(center[0],center[1],0)
+            if len(contour2) > 0 and len(self.waypnts)>0:
+                for c in contour2:
+                    ((x,y),radius) = cv2.minEnclosingCircle(c)
+                    if cv2.pointPolygonTest(np.array(self.outline),(int(x),int(y)),False)>0:
+                        M = cv2.moments(c)
+
+                # c = max(contour2, key = cv2.contourArea)
+                # ((x,y),radius) = cv2.minEnclosingCircle(c)
+                # M = cv2.moments(c)
+                # print radius, cv2.pointPolygonTest(np.array(self.outline),(int(x),int(y)),True)
+                        if radius > 3:
+                            center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+                        # else:
+                        #   center = (0,0)
+                            # res = cv2.circle(res,(int(center[0]),int(center[1])),int(radius),(255,0,0),2)
+                            img_original = cv2.circle(img_original,(int(center[0]),int(center[1])),int(radius),(255,0,0),2)
+
+                          #print center
+                            self.image_pub2.publish(center[0],center[1],0)
+                            break
 
             if len(self.waypnts) > 0:
                 for wp in self.waypnts:
@@ -243,7 +258,7 @@ def main():
     rospy.sleep(1)
 
     ic.prey_color_pub.publish(ColorRGBA(0,255,0,1))
-    ic.predator_color_pub.publish(ColorRGBA(0,0,255,1))
+    ic.predator_color_pub.publish(ColorRGBA(255,0,255,1))
     with open('/home/mikewiz/project_ws/src/maze_control/src/path.csv') as csvfile:
         readCSV = csv.reader(csvfile, delimiter=',')
         for row in readCSV:

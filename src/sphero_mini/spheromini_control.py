@@ -74,7 +74,11 @@ class sphero_control:
             self.prey_percent = self.get_precentTraj(targetnum,'prey',[xt,yt],[x,y])
             # print "prey percent: ",self.prey_percent
 
+            xg1,yg1 = self.waypnt_dict['M1']
+            xg2,yg2 = self.waypnt_dict['M17']
+            global_angle,distance = vector_to_target(xg1,yg2,xg2,yg1)
             angle, distance = vector_to_target(x,yt,xt,y)
+            angle -= global_angle
             outspeed = self.prey_cntrl.getPIDSpeed(distance) - self.prey_error
             outspeed = max(outspeed,0)
             # print angle, distance
@@ -162,10 +166,14 @@ class sphero_control:
             self.predator_percent = self.get_precentTraj(targetnum,'predator',[xt,yt],[x,y])
             # print "predator percent: ", self.predator_percent
 
+            xg1,yg1 = self.waypnt_dict['M1']
+            xg2,yg2 = self.waypnt_dict['M17']
+            global_angle,distance = vector_to_target(xg1,yg2,xg2,yg1)
             angle, distance = vector_to_target(x,yt,xt,y)
+            angle -= global_angle
             outspeed = self.predator_cntrl.getPIDSpeed(distance) - self.predator_error
             outspeed = max(outspeed,0)
-            # print angle
+            # print (x,yt),(xt,y),angle
 
             if distance < 40:
                 self.predator_achieved.append(self.predator_pathpnt[targetnum])
@@ -296,7 +304,7 @@ class sphero_control:
                 lvl += 1
             else:
                 lvl -= 1
-                if alt_cnt < 4
+                if alt_cnt < 4:
                     change = False
                     alt_cnt+=1
 

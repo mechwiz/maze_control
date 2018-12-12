@@ -79,8 +79,8 @@ class image_overlay:
             # uppv= cv2.getTrackbarPos('Upper Value','Converted Image')
             # switch = '0 : OFF \n1 : ON'
             # cv2.createTrackbar(switch, 'Converted Image',0,1,nothing)
-            # lower_red = np.array([lowh,lows,lowv])
-            # upper_red = np.array([upph,upps,uppv])
+            # lower_birch = np.array([lowh,lows,lowv])
+            # upper_birch = np.array([upph,upps,uppv])
             # lower_red = np.array([1,0,0])
             # upper_red = np.array([30,255,255])
             # lower_red = np.array([1,34,81])
@@ -89,7 +89,7 @@ class image_overlay:
             # upper_red = np.array([35,255,200])
             # lower_red = np.array([1,34,50])
             # upper_red = np.array([52,255,255])
-            lower_birch = np.array([1,32,85])
+            lower_birch = np.array([1,0,75]) #[1,20,120]
             upper_birch = np.array([33,128,255])
             lower_red = np.array([50,85,100])
             upper_red = np.array([180,255,255])
@@ -99,18 +99,21 @@ class image_overlay:
             hsv = cv2.cvtColor(img_original,cv2.COLOR_BGR2HSV)
             maskdots = cv2.inRange(hsv,lower_red, upper_red)
             maskbirch = cv2.inRange(hsv,lower_birch, upper_birch)
-            # res =cv2.bitwise_and(img_original,img_original,mask= mask)
+            # res =cv2.bitwise_and(img_original,img_original,mask= maskbirch)
 
             contour_dots = cv2.findContours(maskdots.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
             contour_maze = cv2.findContours(maskbirch.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
 
             if len(contour_dots) > 0 and len(contour_maze)>0:
                 cnts = max(contour_maze, key = cv2.contourArea)
+                # print cnts
+                # print '***************'
                 peri = .01*cv2.arcLength(cnts, True)
                 hull = cv2.convexHull(cnts,clockwise=True)
                 approx = cv2.approxPolyDP(hull,peri,True)
                 if len(approx)>=8:
                     cv2.drawContours(img_original, [hull], -1, (0, 255, 0), 3)
+                    # res = cv2.drawContours(res, [hull], -1, (0, 255, 0), 3)
 
                     self.polypnts1x.append(approx[0][0][0])
                     self.polypnts1y.append(approx[0][0][1])
@@ -175,51 +178,51 @@ class image_overlay:
                     # print 'hull',pnt_hull
                 # print len(goodlist)
                     # print pnt_hull
+                    if len(pnt_hull) >= 8:
+                        self.avgpnts1x.append(pnt_hull[0][0][0])
+                        self.avgpnts1y.append(pnt_hull[0][0][1])
+                        self.avgpnts2x.append(pnt_hull[1][0][0])
+                        self.avgpnts2y.append(pnt_hull[1][0][1])
+                        self.avgpnts3x.append(pnt_hull[2][0][0])
+                        self.avgpnts3y.append(pnt_hull[2][0][1])
 
-                    self.avgpnts1x.append(pnt_hull[0][0][0])
-                    self.avgpnts1y.append(pnt_hull[0][0][1])
-                    self.avgpnts2x.append(pnt_hull[1][0][0])
-                    self.avgpnts2y.append(pnt_hull[1][0][1])
-                    self.avgpnts3x.append(pnt_hull[2][0][0])
-                    self.avgpnts3y.append(pnt_hull[2][0][1])
-
-                    gl=np.copy(goodlist).tolist()
-                    gl.remove([pnt_hull[2][0][0],pnt_hull[2][0][1]])
-                    pnt = gl[find_closest([pnt_hull[2][0][0],pnt_hull[2][0][1]],gl)]
-                    self.avgpnts4x.append(pnt[0])
-                    self.avgpnts4y.append(pnt[1])
-
-
-                    gl=np.copy(goodlist).tolist()
-                    gl.remove([pnt_hull[3][0][0],pnt_hull[3][0][1]])
-                    pnt = gl[find_closest([pnt_hull[3][0][0],pnt_hull[3][0][1]],gl)]
-                    self.avgpnts5x.append(pnt[0])
-                    self.avgpnts5y.append(pnt[1])
+                        gl=np.copy(goodlist).tolist()
+                        gl.remove([pnt_hull[2][0][0],pnt_hull[2][0][1]])
+                        pnt = gl[find_closest([pnt_hull[2][0][0],pnt_hull[2][0][1]],gl)]
+                        self.avgpnts4x.append(pnt[0])
+                        self.avgpnts4y.append(pnt[1])
 
 
-                    self.avgpnts6x.append(pnt_hull[3][0][0])
-                    self.avgpnts6y.append(pnt_hull[3][0][1])
-                    self.avgpnts7x.append(pnt_hull[4][0][0])
-                    self.avgpnts7y.append(pnt_hull[4][0][1])
-                    self.avgpnts8x.append(pnt_hull[5][0][0])
-                    self.avgpnts8y.append(pnt_hull[5][0][1])
-                    self.avgpnts9x.append(pnt_hull[6][0][0])
-                    self.avgpnts9y.append(pnt_hull[6][0][1])
+                        gl=np.copy(goodlist).tolist()
+                        gl.remove([pnt_hull[3][0][0],pnt_hull[3][0][1]])
+                        pnt = gl[find_closest([pnt_hull[3][0][0],pnt_hull[3][0][1]],gl)]
+                        self.avgpnts5x.append(pnt[0])
+                        self.avgpnts5y.append(pnt[1])
 
-                    gl=np.copy(goodlist).tolist()
-                    gl.remove([pnt_hull[6][0][0],pnt_hull[6][0][1]])
-                    pnt = gl[find_closest([pnt_hull[6][0][0],pnt_hull[6][0][1]],gl)]
-                    self.avgpnts10x.append(pnt[0])
-                    self.avgpnts10y.append(pnt[1])
 
-                    gl=np.copy(goodlist).tolist()
-                    gl.remove([pnt_hull[7][0][0],pnt_hull[7][0][1]])
-                    pnt = gl[find_closest([pnt_hull[7][0][0],pnt_hull[7][0][1]],gl)]
-                    self.avgpnts11x.append(pnt[0])
-                    self.avgpnts11y.append(pnt[1])
+                        self.avgpnts6x.append(pnt_hull[3][0][0])
+                        self.avgpnts6y.append(pnt_hull[3][0][1])
+                        self.avgpnts7x.append(pnt_hull[4][0][0])
+                        self.avgpnts7y.append(pnt_hull[4][0][1])
+                        self.avgpnts8x.append(pnt_hull[5][0][0])
+                        self.avgpnts8y.append(pnt_hull[5][0][1])
+                        self.avgpnts9x.append(pnt_hull[6][0][0])
+                        self.avgpnts9y.append(pnt_hull[6][0][1])
 
-                    self.avgpnts12x.append(pnt_hull[7][0][0])
-                    self.avgpnts12y.append(pnt_hull[7][0][1])
+                        gl=np.copy(goodlist).tolist()
+                        gl.remove([pnt_hull[6][0][0],pnt_hull[6][0][1]])
+                        pnt = gl[find_closest([pnt_hull[6][0][0],pnt_hull[6][0][1]],gl)]
+                        self.avgpnts10x.append(pnt[0])
+                        self.avgpnts10y.append(pnt[1])
+
+                        gl=np.copy(goodlist).tolist()
+                        gl.remove([pnt_hull[7][0][0],pnt_hull[7][0][1]])
+                        pnt = gl[find_closest([pnt_hull[7][0][0],pnt_hull[7][0][1]],gl)]
+                        self.avgpnts11x.append(pnt[0])
+                        self.avgpnts11y.append(pnt[1])
+
+                        self.avgpnts12x.append(pnt_hull[7][0][0])
+                        self.avgpnts12y.append(pnt_hull[7][0][1])
 
                     if len(self.avgpnts1x) == 100:
                         self.avgpnt = []
