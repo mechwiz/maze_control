@@ -41,9 +41,9 @@ class predator_calibrate:
             time_diff = t-self.timer
             ts = time_diff.to_sec()
             # print ts
-            if ts < 3:
+            if ts < 1:
                 self.roll_sphero('Predator',80,0,0)
-                if ts > 1:
+                if ts > 0.5:
                     y = data.y
                     x = data.x
                     self.x_list.append(x)
@@ -63,6 +63,10 @@ class predator_calibrate:
                 v1 = np.array([xl2,yl1]-np.array([xl1,yl2]))
 
                 angle = math.degrees(np.math.atan2(np.linalg.det([v0,v1]),np.dot(v0,v1)))
+
+                global_angle,distance = vector_to_target(xg1,yg2,xg2,yg1)
+                angle += global_angle
+
                 if angle < 0:
                     angle+=360
                 self.predator_offset = angle
@@ -155,6 +159,17 @@ class predator_calibrate:
                     alt_cnt+=1
 
         self.timer = rospy.Time.now()
+
+def vector_to_target(currentX, currentY, targetX, targetY):
+    '''
+        Returns distance and angle between two points (in degrees)
+    '''
+    deltaX = targetX - currentX
+    deltaY = targetY - currentY
+    angle = math.degrees(math.atan2(deltaY, deltaX))
+    distance = math.sqrt(deltaX * deltaX + deltaY * deltaY)
+
+    return angle, distance
 
 def main():
     rospy.init_node('predator_calibrate', anonymous=False)
