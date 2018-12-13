@@ -48,6 +48,10 @@ class image_overlay:
         self.polypnts8x = []
         self.polypnts8y = []
         self.bridge = CvBridge()
+        self.lower_birch = np.array(rospy.get_param('board_setup/lower_birch'))
+        self.upper_birch = np.array(rospy.get_param('board_setup/upper_birch'))
+        self.lower_redtape = np.array(rospy.get_param('board_setup/lower_redtape'))
+        self.upper_redtape = np.array(rospy.get_param('board_setup/upper_redtape'))
         self.image_sub = rospy.Subscriber("/combined_image",Image,self.imagecb)
         self.list_pub = rospy.Publisher("waypoints",Waypoints,queue_size=1)
 
@@ -74,17 +78,17 @@ class image_overlay:
             # cv2.createTrackbar(switch, 'Converted Image',0,1,nothing)
             # lower_red = np.array([lowh,lows,lowv])
             # upper_red = np.array([upph,upps,uppv])
-            lower_birch = np.array([1,0,60])
-            upper_birch = np.array([50,255,255])
+            # lower_birch = np.array([1,0,60])
+            # upper_birch = np.array([50,255,255])
 
-            lower_red = np.array([170,120,150])
-            upper_red = np.array([180,255,255])
+            # lower_red = np.array([170,120,150])
+            # upper_red = np.array([180,255,255])
 
             img_original = self.bridge.imgmsg_to_cv2(data, "bgr8")
 
             hsv = cv2.cvtColor(img_original,cv2.COLOR_BGR2HSV)
-            maskdots = cv2.inRange(hsv,lower_red, upper_red)
-            maskbirch = cv2.inRange(hsv,lower_birch, upper_birch)
+            maskdots = cv2.inRange(hsv,self.lower_redtape, self.upper_redtape)
+            maskbirch = cv2.inRange(hsv,self.lower_birch, self.upper_birch)
             # res =cv2.bitwise_and(img_original,img_original,mask= maskdots)
 
             contour_dots = cv2.findContours(maskdots.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]

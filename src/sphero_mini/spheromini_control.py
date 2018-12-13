@@ -290,7 +290,7 @@ def main():
     rospy.init_node('sphero_control', anonymous=False)
     ic = sphero_control()
 
-    with open('/home/mikewiz/project_ws/src/maze_control/src/path.csv') as csvfile:
+    with open(os.path.join(rospack.get_path("maze_control"), "src", "path.csv")) as csvfile:
         readCSV = csv.reader(csvfile, delimiter=',')
         for row in readCSV:
             ic.prey_path.append(row[0])

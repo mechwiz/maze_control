@@ -38,6 +38,9 @@ def main():
     ic.prey = sphero_mini.sphero_mini('FD:62:56:A7:AB:2B', verbosity = 1)
     # ic.prey = sphero_mini.sphero_mini('FA:43:D0:18:52:AA', verbosity = 1)
     print("Connected to Prey")
+    rospy.sleep(1)
+    r,g,b = rospy.get_param('/spheromini_finder/prey_color')
+    ic.prey.setLEDColor(red=int(r),green=int(g),blue=int(b))
 
     try:
         rospy.spin()

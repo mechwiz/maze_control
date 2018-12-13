@@ -1,3 +1,5 @@
 <launch>
-    <node pkg="maze_control" type="board_setup.py" name="board_setup" output="screen"/>
+    <node pkg="maze_control" type="board_setup.py" name="board_setup" output="screen">
+    <rosparam command="load" file="$(find maze_control)/param/mazecolor_calib.yaml"/>
+    </node>
 </launch>

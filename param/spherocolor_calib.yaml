@@ -1,0 +1,7 @@
+lower_prey: [1,125,255]
+upper_prey: [100,255,255]
+lower_predator: [133,30,250]
+upper_predator: [153,210,255]
+
+prey_color: [0,255,0]
+predator_color: [100,0,100]

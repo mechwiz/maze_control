@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import rospy
+import os, rospkg
 import cv2
 import numpy as np
 import csv
@@ -26,6 +27,10 @@ class sphero_finder:
         self.warped_prey = []
         self.warped_predator = []
         self.bridge = CvBridge()
+        self.lower_green = np.array(rospy.get_param('spheromini_finder/lower_prey'))
+        self.upper_green = np.array(rospy.get_param('spheromini_finder/upper_prey'))
+        self.lower_red = np.array(rospy.get_param('spheromini_finder/lower_predator'))
+        self.upper_red = np.array(rospy.get_param('spheromini_finder/upper_predator'))
         self.image_sub = rospy.Subscriber("/combined_image",Image,self.imagecb)
         self.image_sub2 = rospy.Subscriber("/warped_image",Image,self.warpedcb)
         self.waypnts_sub = rospy.Subscriber("/waypoints",Waypoints,self.waypntcb)
@@ -37,15 +42,15 @@ class sphero_finder:
 
     def warpedcb(self,data):
         try:
-            lower_green = np.array([1,125,255])
-            upper_green = np.array([100,255,255])
-            lower_red = np.array([133,30,250])
-            upper_red = np.array([153,210,255])
+            # lower_green = np.array([1,125,255])
+            # upper_green = np.array([100,255,255])
+            # lower_red = np.array([133,30,250])
+            # upper_red = np.array([153,210,255])
 
             img_original = self.bridge.imgmsg_to_cv2(data, "bgr8")
             hsv = cv2.cvtColor(img_original,cv2.COLOR_BGR2HSV)
-            mask = cv2.inRange(hsv,lower_green, upper_green)
-            mask2 = cv2.inRange(hsv,lower_red, upper_red)
+            mask = cv2.inRange(hsv,self.lower_green, self.upper_green)
+            mask2 = cv2.inRange(hsv,self.lower_red, self.upper_red)
             # res =cv2.bitwise_and(img_original,img_original,mask= mask2)
 
             contour = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
@@ -96,12 +101,12 @@ class sphero_finder:
             # Convert Image message to CV image with blue-green-red color order (bgr8)
             # create trackbars for color change
             cv2.namedWindow('Converted Image')
-            cv2.createTrackbar('Lower Hue','Converted Image',0,180,nothing)
-            cv2.createTrackbar('Lower Sat','Converted Image',0,255,nothing)
-            cv2.createTrackbar('Lower Value','Converted Image',0,255,nothing)
-            cv2.createTrackbar('Upper Hue','Converted Image',0,180,nothing)
-            cv2.createTrackbar('Upper Sat','Converted Image',0,255,nothing)
-            cv2.createTrackbar('Upper Value','Converted Image',0,255,nothing)
+            cv2.createTrackbar('Lower Hue','Converted Image',self.lower_green[0],180,nothing)
+            cv2.createTrackbar('Lower Sat','Converted Image',self.lower_green[1],255,nothing)
+            cv2.createTrackbar('Lower Value','Converted Image',self.lower_green[2],255,nothing)
+            cv2.createTrackbar('Upper Hue','Converted Image',self.upper_green[0],180,nothing)
+            cv2.createTrackbar('Upper Sat','Converted Image',self.upper_green[1],255,nothing)
+            cv2.createTrackbar('Upper Value','Converted Image',self.upper_green[2],255,nothing)
             switch = '0 : OFF \n1 : ON'
             cv2.createTrackbar(switch, 'Converted Image',0,1,nothing)
 
@@ -117,13 +122,13 @@ class sphero_finder:
 
             # lower_green = np.array([1,125,255])
             # upper_green = np.array([100,255,255])
-            lower_red = np.array([133,30,250])
-            upper_red = np.array([153,210,255])
+            # lower_red = np.array([133,30,250])
+            # upper_red = np.array([153,210,255])
 
             img_original = self.bridge.imgmsg_to_cv2(data, "bgr8")
             hsv = cv2.cvtColor(img_original,cv2.COLOR_BGR2HSV)
             mask = cv2.inRange(hsv,lower_green, upper_green)
-            mask2 = cv2.inRange(hsv,lower_red, upper_red)
+            mask2 = cv2.inRange(hsv,self.lower_red, self.upper_red)
             res =cv2.bitwise_and(img_original,img_original,mask= mask)
 
             contour = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
@@ -147,7 +152,7 @@ class sphero_finder:
                                 self.image_pub.publish(int(x),int(y),0)
                                 break
                 elif len(self.warped_prey)>0:
-                    img_original = cv2.circle(img_original,(self.warped_prey[0],self.warped_prey[1]),int(radius),(0,255,0),2)
+                    img_original = cv2.circle(img_original,(self.warped_prey[0],self.warped_prey[1]),5,(0,255,0),2)
                     self.image_pub.publish(self.warped_prey[0],self.warped_prey[1],0)
 
             if len(self.waypnts)>0:
@@ -166,7 +171,7 @@ class sphero_finder:
                                 break
 
                 elif len(self.warped_predator)>0:
-                        img_original = cv2.circle(img_original,(self.warped_predator[0],self.warped_predator[1]),int(radius),(255,0,0),2)
+                        img_original = cv2.circle(img_original,(self.warped_predator[0],self.warped_predator[1]),5,(255,0,0),2)
                         self.image_pub2.publish(self.warped_predator[0],self.warped_predator[1],0)
 
             if len(self.waypnts) > 0:
@@ -300,9 +305,12 @@ def main():
     ic = sphero_finder()
     rospy.sleep(1)
 
-    ic.prey_color_pub.publish(ColorRGBA(0,255,0,1))
-    ic.predator_color_pub.publish(ColorRGBA(100,0,100,1))
-    with open('/home/mikewiz/project_ws/src/maze_control/src/path.csv') as csvfile:
+    r,g,b = rospy.get_param('spheromini_finder/prey_color')
+    ic.prey_color_pub.publish(ColorRGBA(r,g,b,1))
+    r,g,b = rospy.get_param('spheromini_finder/predator_color')
+    ic.predator_color_pub.publish(ColorRGBA(r,g,b,1))
+    rospack = rospkg.RosPack()
+    with open(os.path.join(rospack.get_path("maze_control"), "src", "path.csv")) as csvfile:
         readCSV = csv.reader(csvfile, delimiter=',')
         for row in readCSV:
             ic.prey_path.append(row[0])

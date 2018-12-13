@@ -48,6 +48,10 @@ class image_overlay:
         self.polypnts8x = []
         self.polypnts8y = []
         self.bridge = CvBridge()
+        self.lower_birch = np.array(rospy.get_param('board_setup/lower_birch'))
+        self.upper_birch = np.array(rospy.get_param('board_setup/upper_birch'))
+        self.lower_redtape = np.array(rospy.get_param('board_setup/lower_redtape'))
+        self.upper_redtape = np.array(rospy.get_param('board_setup/upper_redtape'))
         self.image_sub = rospy.Subscriber("/combined_image",Image,self.imagecb)
         self.list_pub = rospy.Publisher("waypoints",Waypoints,queue_size=1)
 
@@ -57,12 +61,12 @@ class image_overlay:
             # Convert Image message to CV image with blue-green-red color order (bgr8)
             # create trackbars for color change
             cv2.namedWindow('Converted Image')
-            cv2.createTrackbar('Lower Hue','Converted Image',0,180,nothing)
-            cv2.createTrackbar('Lower Sat','Converted Image',0,255,nothing)
-            cv2.createTrackbar('Lower Value','Converted Image',0,255,nothing)
-            cv2.createTrackbar('Upper Hue','Converted Image',0,180,nothing)
-            cv2.createTrackbar('Upper Sat','Converted Image',0,255,nothing)
-            cv2.createTrackbar('Upper Value','Converted Image',0,255,nothing)
+            cv2.createTrackbar('Lower Hue','Converted Image',self.lower_birch[0],180,nothing)
+            cv2.createTrackbar('Lower Sat','Converted Image',self.lower_birch[1],255,nothing)
+            cv2.createTrackbar('Lower Value','Converted Image',self.lower_birch[2],255,nothing)
+            cv2.createTrackbar('Upper Hue','Converted Image',self.upper_birch[0],180,nothing)
+            cv2.createTrackbar('Upper Sat','Converted Image',self.upper_birch[1],255,nothing)
+            cv2.createTrackbar('Upper Value','Converted Image',self.upper_birch[2],255,nothing)
 
             lowh = cv2.getTrackbarPos('Lower Hue','Converted Image')
             lows = cv2.getTrackbarPos('Lower Sat','Converted Image')
@@ -77,13 +81,13 @@ class image_overlay:
             # lower_birch = np.array([1,0,60])
             # upper_birch = np.array([50,255,255])
 
-            lower_red = np.array([170,120,150])
-            upper_red = np.array([180,255,255])
+            # lower_red = np.array([170,120,150])
+            # upper_red = np.array([180,255,255])
 
             img_original = self.bridge.imgmsg_to_cv2(data, "bgr8")
 
             hsv = cv2.cvtColor(img_original,cv2.COLOR_BGR2HSV)
-            maskdots = cv2.inRange(hsv,lower_red, upper_red)
+            maskdots = cv2.inRange(hsv,self.lower_redtape, self.upper_redtape)
             maskbirch = cv2.inRange(hsv,lower_birch, upper_birch)
             res =cv2.bitwise_and(img_original,img_original,mask= maskbirch)
 

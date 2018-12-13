@@ -39,6 +39,10 @@ def main():
     ic.predator = sphero_mini.sphero_mini('EF:C4:6B:A5:3A:F9', verbosity = 1)
     print("Connected to Predator")
 
+    rospy.sleep(1)
+    r,g,b = rospy.get_param('/spheromini_finder/predator_color')
+    ic.predator.setLEDColor(red=int(r),green=int(g),blue=int(b))
+
     try:
         rospy.spin()
     except KeyboardInterrupt:
