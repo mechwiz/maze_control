@@ -27,7 +27,7 @@ class sphero_control:
         self.predator_percent = 0
         self.prey_error = 0
         self.predator_error = 0
-        self.kp = 1
+        self.kp = rospy.get_param('spheromini_control/kp_track')
         self.prey_limit = True
         self.predator_limit = True
         self.prey_achieved = []

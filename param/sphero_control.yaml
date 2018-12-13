@@ -5,3 +5,5 @@ stopRadius: 20
 maxSpeed: 40
 minSpeed: 20
 resumeSpeed: 40
+
+kp_track: 1
