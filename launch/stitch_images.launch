@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="maze_control" type="combine_images.py" name="combine_images" output="screen"/>
+</launch>

@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="maze_control" type="spheromini_finder.py" name="spheromini_finder" output="screen"/>
+</launch>

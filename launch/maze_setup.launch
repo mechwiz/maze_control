@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="maze_control" type="board_setup.py" name="board_setup" output="screen"/>
+</launch>
