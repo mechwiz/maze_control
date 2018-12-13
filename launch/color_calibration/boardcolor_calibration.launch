@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="maze_control" type="calibrate_board.py" name="calibrate_board" output="screen"/>
+</launch>

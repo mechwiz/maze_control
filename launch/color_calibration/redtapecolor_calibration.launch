@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="maze_control" type="calibrate_redtape.py" name="calibrate_redtape" output="screen"/>
+</launch>

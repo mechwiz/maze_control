@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="maze_control" type="calibrate_preycolor.py" name="calibrate_preycolor" output="screen"/>
+</launch>
