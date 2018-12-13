@@ -362,12 +362,6 @@ class image_overlay:
 def nothing(x):
     pass
 
-def find_closest(node,nodes):
-    nodes = np.asarray(nodes)
-    node = np.asarray(node)
-    dist_2 = np.sum((nodes - node)**2, axis=1)
-    return np.argmin(dist_2)
-
 def points (p0, p1):
     x0, y0 = p0
     x1, y1 = p1
