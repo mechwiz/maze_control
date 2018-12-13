@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import rospy
+import os, rospkg
 import cv2
 import numpy as np
 import csv
@@ -45,6 +46,13 @@ class sphero_control:
         self.predator_offset = 0
         self.prey_cntrl = pidController()
         self.predator_cntrl = pidController()
+        self.Kp = rospy.get_param('spheromini_control/Kp')
+        self.Ki = rospy.get_param('spheromini_control/Ki')
+        self.Kd = rospy.get_param('spheromini_control/Kd')
+        self.stopRadius = rospy.get_param('spheromini_control/stopRadius')
+        self.maxSpeed = rospy.get_param('spheromini_control/maxSpeed')
+        self.minSpeed = rospy.get_param('spheromini_control/minSpeed')
+        self.resumeSpeed = rospy.get_param('spheromini_control/resumeSpeed')
         self.waypnt_sub = rospy.Subscriber("/waypoints_fixed",Waypoints,self.waypntcb)
         self.prey_sub = rospy.Subscriber("/center_point1",Point,self.prey_cb)
         self.predator_sub = rospy.Subscriber("/center_point2",Point,self.predator_cb)
@@ -65,7 +73,7 @@ class sphero_control:
             self.prey_percent = self.get_precentTraj(targetnum,'prey',[xt,yt],[x,y])
 
             angle, distance = vector_to_target(x,yt,xt,y)
-            outspeed = self.prey_cntrl.getPIDSpeed(distance) - self.prey_error
+            outspeed = self.prey_cntrl.getPIDSpeed(distance,self.Kp,self.Ki,self.Kd,self.stopRadius,self.maxSpeed,self.minSpeed,self.resumeSpeed) - self.prey_error
             outspeed = max(outspeed,0)
 
             if distance < 20:
@@ -75,7 +83,7 @@ class sphero_control:
                     xt,yt = self.prey_pathpnt[targetnum]
                     angle, distance = vector_to_target(x,yt,xt,y)
                     self.prey_cntrl.reset()
-                    outspeed = self.prey_cntrl.getPIDSpeed(distance) - self.prey_error
+                    outspeed = self.prey_cntrl.getPIDSpeed(distance,self.Kp,self.Ki,self.Kd,self.stopRadius,self.maxSpeed,self.minSpeed,self.resumeSpeed) - self.prey_error
                     outspeed = max(outspeed,0)
                     self.roll_sphero('Prey',outspeed,angle,self.prey_offset)
                 else:
@@ -106,7 +114,7 @@ class sphero_control:
             self.predator_percent = self.get_precentTraj(targetnum,'predator',[xt,yt],[x,y])
 
             angle, distance = vector_to_target(x,yt,xt,y)
-            outspeed = self.predator_cntrl.getPIDSpeed(distance) - self.predator_error
+            outspeed = self.predator_cntrl.getPIDSpeed(distance,self.Kp,self.Ki,self.Kd,self.stopRadius,self.maxSpeed,self.minSpeed,self.resumeSpeed) - self.predator_error
             outspeed = max(outspeed,0)
 
             if distance < 20:
@@ -116,7 +124,7 @@ class sphero_control:
                     xt,yt = self.predator_pathpnt[targetnum]
                     angle, distance = vector_to_target(x,yt,xt,y)
                     self.predator_cntrl.reset()
-                    outspeed = self.predator_cntrl.getPIDSpeed(distance,self.predator_speed) - self.predator_error
+                    outspeed = self.predator_cntrl.getPIDSpeed(distance,self.Kp,self.Ki,self.Kd,self.stopRadius,self.maxSpeed,self.minSpeed,self.resumeSpeed) - self.predator_error
                     outspeed = max(outspeed,0)
                     self.roll_sphero('Predator',outspeed,angle,self.predator_offset)
                 else:
@@ -290,6 +298,7 @@ def main():
     rospy.init_node('sphero_control', anonymous=False)
     ic = sphero_control()
 
+    rospack = rospkg.RosPack()
     with open(os.path.join(rospack.get_path("maze_control"), "src", "path.csv")) as csvfile:
         readCSV = csv.reader(csvfile, delimiter=',')
         for row in readCSV:

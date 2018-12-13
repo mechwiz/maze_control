@@ -1,0 +1,7 @@
+Kp: 0.1
+Ki: 0
+Kd: 0.1
+stopRadius: 20
+maxSpeed: 40
+minSpeed: 20
+resumeSpeed: 40
