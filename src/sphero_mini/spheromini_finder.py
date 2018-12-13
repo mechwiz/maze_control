@@ -43,7 +43,6 @@ class sphero_finder:
             upper_red = np.array([153,210,255])
 
             img_original = self.bridge.imgmsg_to_cv2(data, "bgr8")
-            # img_original = cv2.flip(img_original,1)
             hsv = cv2.cvtColor(img_original,cv2.COLOR_BGR2HSV)
             mask = cv2.inRange(hsv,lower_green, upper_green)
             mask2 = cv2.inRange(hsv,lower_red, upper_red)
@@ -58,17 +57,12 @@ class sphero_finder:
                     ((x,y),radius) = cv2.minEnclosingCircle(c)
                     if cv2.pointPolygonTest(np.array(self.outline),(int(x),int(y)),False)>0:
                         # M = cv2.moments(c)
-
-                        # print radius, cv2.pointPolygonTest(np.array(self.outline),(int(x),int(y)),False), (x,y)
                         if radius > 3:
                             # center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-                        # else:
-                        #   center = (0,0)
+
                             # res = cv2.circle(res,(int(x),int(y)),int(radius),(0,255,0),2)
                             # img_original = cv2.circle(img_original,(int(x),int(y)),int(radius),(0,255,0),2)
 
-                          #print center
-                            # self.image_pub.publish(int(x),int(y),0)
                             self.warped_prey = [int(x),int(y)]
                             break
 
@@ -80,30 +74,18 @@ class sphero_finder:
                     ((x,y),radius) = cv2.minEnclosingCircle(c)
                     if cv2.pointPolygonTest(np.array(self.outline),(int(x),int(y)),False)>0:
                         # M = cv2.moments(c)
-
-                # c = max(contour2, key = cv2.contourArea)
-                # ((x,y),radius) = cv2.minEnclosingCircle(c)
-                # M = cv2.moments(c)
-                # print radius, cv2.pointPolygonTest(np.array(self.outline),(int(x),int(y)),True)
                         if radius > 3:
                             # center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-                        # else:
-                        #   center = (0,0)
+
                             # res = cv2.circle(res,(int(x),int(y)),int(radius),(255,0,0),2)
                             # img_original = cv2.circle(img_original,(int(x),int(y)),int(radius),(255,0,0),2)
 
-                          #print center
-                            # self.image_pub2.publish(int(x),int(y),0)
                             self.warped_predator = [int(x),int(y)]
                             break
             else:
                 self.warped_predator = []
 
             # self.warpedpic = img_original
-            # cv2.imshow("Warped converted Image",img_original)
-            # # cv2.imshow("Converted Image",np.hstack([img_original,res]))
-
-            # cv2.waitKey(3)
 
         except CvBridgeError, e:
             print("==[CAMERA MANAGER]==", e)
@@ -132,35 +114,13 @@ class sphero_finder:
 
             # lower_red = np.array([lowh,lows,lowv])
             # upper_red = np.array([upph,upps,uppv])
-            # lower_red = np.array([140,75,150])
-            # upper_red = np.array([180,170,255])
-            # lower_red = np.array([140,10,0])
-            # upper_red = np.array([180,170,255])
-            # lower_red2 = np.array([70,90,175])
-            # upper_red2 = np.array([130,190,255])
-            # lower_red2 = np.array([70,90,175])
-            # upper_red2 = np.array([120,217,255])
-            # lower_red2 = np.array([0,180,125])
-            # upper_red2 = np.array([10,255,255])
-            # lower_red2 = np.array([100,25,200])
-            # upper_red2 = np.array([164,255,255])
 
-            # lower_red = np.array([140,10,150])
-            # upper_red = np.array([180,170,255])
-
-            # lower_red = np.array([45,10,150])
-            # upper_red = np.array([100,170,255])
-            # lower_red = np.array([80,30,220])
-            # upper_red = np.array([100,255,255])
             lower_green = np.array([1,125,255])
             upper_green = np.array([100,255,255])
             lower_red = np.array([133,30,250])
             upper_red = np.array([153,210,255])
-            # lower_red = np.array([135,35,205])
-            # upper_red = np.array([168,255,255])
 
             img_original = self.bridge.imgmsg_to_cv2(data, "bgr8")
-            # img_original = cv2.flip(img_original,1)
             hsv = cv2.cvtColor(img_original,cv2.COLOR_BGR2HSV)
             mask = cv2.inRange(hsv,lower_green, upper_green)
             mask2 = cv2.inRange(hsv,lower_red, upper_red)
@@ -177,11 +137,9 @@ class sphero_finder:
                         if cv2.pointPolygonTest(np.array(self.outline),(int(x),int(y)),False)>0:
                             # M = cv2.moments(c)
 
-                            # print radius, cv2.pointPolygonTest(np.array(self.outline),(int(x),int(y)),False), (x,y)
                             if radius > 3:
                                 # center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-                            # else:
-                            #   center = (0,0)
+
                                 # res = cv2.circle(res,(int(x),int(y)),int(radius),(0,255,0),2)
                                 img_original = cv2.circle(img_original,(int(x),int(y)),int(radius),(0,255,0),2)
 
@@ -199,20 +157,14 @@ class sphero_finder:
                         if cv2.pointPolygonTest(np.array(self.outline),(int(x),int(y)),False)>0:
                             # M = cv2.moments(c)
 
-                    # c = max(contour2, key = cv2.contourArea)
-                    # ((x,y),radius) = cv2.minEnclosingCircle(c)
-                    # M = cv2.moments(c)
-                    # print radius, cv2.pointPolygonTest(np.array(self.outline),(int(x),int(y)),True)
                             if radius > 3:
                                 # center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-                            # else:
-                            #   center = (0,0)
+
                                 # res = cv2.circle(res,(int(x),int(y)),int(radius),(255,0,0),2)
                                 img_original = cv2.circle(img_original,(int(x),int(y)),int(radius),(255,0,0),2)
-
-                              #print center
                                 self.image_pub2.publish(int(x),int(y),0)
                                 break
+
                 elif len(self.warped_predator)>0:
                         img_original = cv2.circle(img_original,(self.warped_predator[0],self.warped_predator[1]),int(radius),(255,0,0),2)
                         self.image_pub2.publish(self.warped_predator[0],self.warped_predator[1],0)
@@ -222,9 +174,7 @@ class sphero_finder:
                     cv2.circle(img_original,(wp[0],wp[1]),5,(0,0,255),-1)
 
                 pts = np.array(self.outline,np.int32)
-                # pts = pts.reshape((-1,1,2))
                 cv2.polylines(img_original,[pts],True,(0,255,0),3)
-                # cv2.drawContours(img_original, np.array(self.outline), -1, (0, 255, 0), 3)
 
                 for wp in self.outline:
                     cv2.circle(img_original,(wp[0],wp[1]),5,(255,0,0),-1)
@@ -357,16 +307,12 @@ def main():
         for row in readCSV:
             ic.prey_path.append(row[0])
             ic.predator_path.append(row[1])
-    # print ic.path
+
     try:
         rospy.spin()
     except KeyboardInterrupt:
         print("Shutting down")
     cv2.destroyAllWindows()
-    # rospy.init_node('main')
-    # rospy.Subscriber("/waypoints",Waypoints,data_cb)
-
-    # rospy.spin()
 
 if __name__ == "__main__":
     main()

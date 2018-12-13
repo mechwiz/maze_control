@@ -53,7 +53,7 @@ class combine_images:
             print("==[CAMERA MANAGER]==", e)
 
     def process_image(self,data):
-        # left,right = data
+        left,right = data
         # stitch the frames together to form the panorama
         # IMPORTANT: you might have to change this line of code
         # depending on how your cameras are oriented; frames
@@ -63,7 +63,7 @@ class combine_images:
         else:
             showMatch = True
 
-        res = self.stitcher.stitch([self.left, self.right],showMatches=showMatch)# no homograpy could be computed
+        res = self.stitcher.stitch([left, right],showMatches=showMatch)# no homograpy could be computed
 
         if len(res) == 1:
             result = res[0]
