@@ -17,7 +17,7 @@ Move the sliders around until you are satisfied with the resulting boundaries as
 
 ![imgs/boardcolor.png]
 
-Record the HSV upper and lower boundaries and enter them into the lower and upper birch parameters in the corresponding yaml file [here](../param/mazecolor_calib.yaml)
+Record the HSV upper and lower boundaries and enter them into the lower and upper birch parameters in the corresponding yaml file [here](../../param/mazecolor_calib.yaml)
 
 #### Red Tape Color Calibration
 In order to find good HSV boundaries for color segmentation for obtaining the red tape markers on the maze, run the following:
@@ -30,7 +30,7 @@ Move the sliders around until you are satisfied with the resulting boundaries as
 
 ![imgs/redtape.png]
 
-Record the HSV upper and lower boundaries and enter them into the lower and upper redtape parameters in the corresponding yaml file [here](../param/mazecolor_calib.yaml)
+Record the HSV upper and lower boundaries and enter them into the lower and upper redtape parameters in the corresponding yaml file [here](../../param/mazecolor_calib.yaml)
 
 #### Prey Color Calibration
 In order to find good HSV boundaries for color segmentation for finding the prey sphero, run the following:
@@ -43,7 +43,7 @@ Move the sliders around until you are satisfied with the resulting boundaries as
 
 ![imgs/preycolor.png]
 
-Record the HSV upper and lower boundaries and enter them into the lower and upper prey color parameters in the corresponding yaml file [here](../param/spherocolor_calib.yaml)
+Record the HSV upper and lower boundaries and enter them into the lower and upper prey color parameters in the corresponding yaml file [here](../../param/spherocolor_calib.yaml)
 
 #### Predator Color Calibration
 In order to find good HSV boundaries for color segmentation for finding the predator sphero, run the following:
@@ -56,4 +56,4 @@ Move the sliders around until you are satisfied with the resulting boundaries as
 
 ![imgs/predatorcolor.png]
 
-Record the HSV upper and lower boundaries and enter them into the lower and upper predator color parameters in the corresponding yaml file [here](../param/spherocolor_calib.yaml)
+Record the HSV upper and lower boundaries and enter them into the lower and upper predator color parameters in the corresponding yaml file [here](../../param/spherocolor_calib.yaml)
