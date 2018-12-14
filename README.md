@@ -128,6 +128,8 @@ roslaunch maze_control predatormini_sphero.launch
 ```
 The terminal will send a message when each sphero has been connected to succesfully. The prey and predator spheros should initialize with a green and purple color respectively. If you do not see this visial confirmation, you should rerun the corresponding node for that sphero.
 
+If you would like to connect to a different sphero mini or change the sphero color for tracking purposes, you can change the bluetooth address and color RGB values for the prey and predator yaml files [here](param). You will need to run color calibration, though, if you change the sphero color. Ideally, you should pick a color that will be easy to segment from the other colors being detected. The default colors now work great in the lab.
+
 <ol start="5">
 <li>Launch the sphero finder node by running:</li></ol>
 
