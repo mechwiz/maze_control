@@ -119,7 +119,7 @@ Y1,Y2,Y3,...,Y9
 The points are then published so that other nodes can use them for sphero calibration and control.
 
 <ol start="4">
-<li>Before you can launch the **sphero_finder** node, you need to first connect to the spheros. You can do this by running the following 2 commands **separately** - each one in a separate terminal. Wait for one to finish before starting the next one. Also make sure your bluetooth is turned on. You do not need to "turn on" the spheros for this procedure. They have smart BTLE so they are always listening.</li>
+<li>Before you can launch the <b>sphero_finder</b> node, you need to first connect to the spheros. You can do this by running the following 2 commands <b>separately</b> - each one in a separate terminal. Wait for one to finish before starting the next one. Also make sure your bluetooth is turned on. You do not need to "turn on" the spheros for this procedure. They have smart BTLE so they are always listening.</li>
 </ol>
 
 ```
@@ -147,7 +147,7 @@ Once you set the configuraiton on the image feed from your **sphero_finder** nod
 You will also see the paths for each of the spheros to follow. The blue path signifies the path of the prey, and the yellow path signifies the path of the predator. These paths are defined in [path.csv](src/path.csv). The paths are defined by a sequence of the cell names that each sphero will be following.
 
 <ol start="6">
-<li>Next, you will need to calibrate the spheros so that their relative frames are transformed into the global frame of the maze and into the camera frame. You can do this by placing each sphero in a relatively open area within the maze and running the following 2 commands **separately** - each one in a separate terminal. </li>
+<li>Next, you will need to calibrate the spheros so that their relative frames are transformed into the global frame of the maze and into the camera frame. You can do this by placing each sphero in a relatively open area within the maze and running the following 2 commands <b>separately</b> - each one in a separate terminal. </li>
 </ol>
 
 ```
