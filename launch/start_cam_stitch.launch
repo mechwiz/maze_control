@@ -1,0 +1,9 @@
+<launch>
+
+    <!--- Start Cameras -->
+  <include file="$(find maze_control)/launch/usb_2cams.launch" />
+
+  <!--- Run Image Stitching Node -->
+  <include file="$(find maze_control)/launch/stitch_images.launch" />
+
+</launch>
