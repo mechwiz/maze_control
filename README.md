@@ -95,6 +95,7 @@ You will notice that the **Result** and **Keypoint Matches** frames will change 
 |Detection of Maze Contour and Red Tape | Interpolation of Cell Points|
 |:--------------:|:-------------:|
 |<img src="imgs/maze_setup1.png" width="500px" alt="" /> | <img src="imgs/maze_setup2.png" width="500px" alt="" /> |
+
 First, the node will use color segmentation to detect the contour of the maze and then use it again to look for the red tape within that contour. This helps eliminate any red objects that happen to be outside the maze from being detected. To make sure that all the points the node detects (both for the points that make up the maze contour and the red tape points) are valid, it collects 100 samples of each point and takes their corresponding modes. This process may take a few seconds, so the left image above is what you should expect to be seeing during this time. Using the 8 red tape points, all of the other cell points in the maze are interpolated and an image feed lookng like the picture above on the right should appear. All the cell points are then named in the following convention. Assuming the long side of the octagonal maze is vertical, the cells from top to bottom are:
 
 ```
@@ -130,6 +131,7 @@ The terminal will send a message when each sphero has been connected to succesfu
 |Waiting for map calibration... | Detection of Prey and Predator Spheros|
 |:--------------:|:-------------:|
 |<img src="imgs/maze_setup1.png" width="500px" alt="" /> | <img src="imgs/maze_setup2.png" width="500px" alt="" /> |
+
 First, an image feed of just the stitched image should appear like the one on the left above. Before the node can find the spheros, it must know the layout of the maze contour so that it knows what area to look within and what to ignore. Since we already know this from the last step, all that needs to be done is to let the **maze_setup** node know when to send over this information. To do this, click on the image feed from the **maze_setup** node and hit the "**c**" key when you see a good feed (like the one shown in the last step). Once you do this, you will see a snapshot of the current waypoint configuration of the maze along with the bounded maze contour show up on the image feed from the **sphero_finder** node. If you still don't like the configuration, you may click the image feed from the **maze_setup** node and hit the "**c**" key again until you are satisfied. Once you finish this process, you may terminate the **maze_setup** node by typing "Cntrl+c" into the terminal running that launch file in order to free up some processing power on your machine.
 
 Once you set the configuraiton on the image feed from your **sphero_finder** node, you should see a green circle around the prey sphero and a blue circle around the predator sphero. Currently, the node identifies the prey and predator spheros by their green and purple colors respectively. If you do not see one or both of these circles, then you need to calibrate the color segmentation parameters for detecting them [hereeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee]().
