@@ -94,7 +94,7 @@ You will notice that the **Result** and **Keypoint Matches** frames will change 
 ```
 roslaunch maze_control maze_setup.launch
 ```
-Assuming your color calibration is good for detecting the maze contour and the red tape, you will see the following progression of images from left to right.
+Assuming your color calibration is good for detecting the maze contour and the red tape, you will see the following progression of images from left to right. If the calibration is off, please look [here](launch/color_calibration/README.md) for the appropiate calibration procedure.
 
 |Detection of Maze Contour and Red Tape | Interpolation of Cell Points|
 |:--------------:|:-------------:|
@@ -134,7 +134,7 @@ The terminal will send a message when each sphero has been connected to succesfu
 ```
 roslaunch maze_control spheromini_finder.launch
 ```
-Assuming your color calibration is good for detecting the color of each sphero, you will see the following progression of images from left to right:
+Assuming your color calibration is good for detecting the color of each sphero, you will see the following progression of images from left to right. If the calibration is off, please look [here](launch/color_calibration/README.md) for the appropiate calibration procedure.
 
 |Waiting for map calibration... | Detection of Prey and Predator Spheros|
 |:--------------:|:-------------:|
@@ -142,7 +142,7 @@ Assuming your color calibration is good for detecting the color of each sphero, 
 
 First, an image feed of just the stitched image should appear like the one on the left above. Before the node can find the spheros, it must know the layout of the maze contour so that it knows what area to look within and what to ignore. Since we already know this from the last step, all that needs to be done is to let the **maze_setup** node know when to send over this information. To do this, click on the image feed from the **maze_setup** node and hit the "**c**" key when you see a good feed (like the one shown in the last step). Once you do this, you will see a snapshot of the current waypoint configuration of the maze along with the bounded maze contour show up on the image feed from the **sphero_finder** node. If you still don't like the configuration, you may click the image feed from the **maze_setup** node and hit the "**c**" key again until you are satisfied. Once you finish this process, you may terminate the **maze_setup** node by typing "Cntrl+c" into the terminal running that launch file in order to free up some processing power on your machine.
 
-Once you set the configuraiton on the image feed from your **sphero_finder** node, you should see a green circle around the prey sphero and a blue circle around the predator sphero. Currently, the node identifies the prey and predator spheros by their green and purple colors respectively. If you do not see one or both of these circles, then you need to calibrate the color segmentation parameters for detecting them [hereeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee]().
+Once you set the configuraiton on the image feed from your **sphero_finder** node, you should see a green circle around the prey sphero and a blue circle around the predator sphero. Currently, the node identifies the prey and predator spheros by their green and purple colors respectively. If you do not see one or both of these circles, then you need to calibrate the color segmentation parameters for detecting them [here](launch/color_calibration/README.md) as mentioned above.
 
 You will also see the paths for each of the spheros to follow. The blue path signifies the path of the prey, and the yellow path signifies the path of the predator. These paths are defined in [path.csv](src/path.csv). The paths are defined by a sequence of the cell names that each sphero will be following.
 
@@ -162,7 +162,16 @@ After running the launch file, you will need to click the image feed from the **
 ```
 roslaunch maze_control spheromomini_control
 ```
-in a terminal. This node is responsible for controlling each sphero such that they each follow their respective paths and do so in a way where one is not too many steps ahead of the other one on its path than the other one is on its path. Each sphero is controlled using PID control using an adapted [PID control library](https://github.com/hydrosquall/SpheroTeam/blob/master/SpheroTeam/pidController.py) meant for sphero control which was originally inspired by a [PID control function](https://www.mathworks.com/matlabcentral/fileexchange/52481-sphero-connectivity-package) found in a Sphero control library in Matlab's File Exchange
+in a terminal. This node is responsible for controlling each sphero such that they each follow their respective paths and do so in a way where one is not too many steps ahead of the other one on its path than the other one is on its path. Each sphero is controlled using PID control using an adapted [PID control library](https://github.com/hydrosquall/SpheroTeam/blob/master/SpheroTeam/pidController.py) meant for sphero control which was originally inspired by a [PID control function](https://www.mathworks.com/matlabcentral/fileexchange/52481-sphero-connectivity-package) found in a Sphero control library in Matlab's File Exchange.
+
+The gains and parameters for the controls can be modified [here](param/sphero_control.yaml) if you would like to tweak them. The parameter descriptions are as follows:
+- Kp: Proportional controller gain
+- Ki: Integral controller gain
+- Kd: Derivative controller gain
+- stopRadius: If robot is within this distance (measured in pixels) of object, stop
+- distance: Distance in pixels between robot and desired point
+- resumeSpeed: If robot stops, this speed overcomes inertia
+- kp_track: Proportional controller gain for decreasing speed of sphero pulling ahead of the other on its path as comparted to the other one on its path
 
 ## Demo & Future Improvements
 #### Video
