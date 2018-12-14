@@ -89,8 +89,9 @@ There are several steps and sidesteps to implementing this package which is disc
 You will notice that the **Result** and **Keypoint Matches** frames will change every 0.5 seconds. This is intentional. The idea behind this node is to let you choose the best homography matrix to use that will transform the right hand frame into the left-hand frame so that the resulting image looks literally like a stitched image. Within each 0.5 seconds, the node will calculate a new homagraphy matrix based on the Key Point Matches between the left and right hand frames. If the key-point pairs are matched together with horizontal lines at what seems to be the right places, chances are that it's a good match. Thus, the resulting stitched and key-point images are shown to you so that you have visual feedback to choose the best homography matrix. **The way to choose the best matrix** is by clicking the _Stitched Frame_ image with your mouse, wait until you see a good match, and then hit the "**c**" key on your keyboard. Upon completion of this process, the left, right, and keypoint images will be closed. The homography matrix for the chosen image will be cached and the publishing rate of the stitched image will be restored to 30 hz.
 
 <ol start="3">
-<li>Launch the board setup node by running `roslaunch maze_control maze_setup.launch`. Assuming your color calibration is good for detecting the maze contour and the red tape, you will see the following progression of images from left to right.</li>
-</ol>
+<li>Launch the board setup node by running:</li></ol>
+`roslaunch maze_control maze_setup.launch`.
+Assuming your color calibration is good for detecting the maze contour and the red tape, you will see the following progression of images from left to right.
 
 |Detection of Maze Contour and Red Tape | Interpolation of Cell Points|
 |:--------------:|:-------------:|
@@ -125,8 +126,8 @@ roslaunch maze_control predatormini_sphero.launch
 The terminal will send a message when each sphero has been connected to succesfully. The prey and predator spheros should initialize with a green and purple color respectively. If you do not see this visial confirmation, you should rerun the corresponding node for that sphero.
 
 <ol start="5">
-<li>Launch the sphero finder node by running `roslaunch maze_control spheromini_finder.launch`. Assuming your color calibration is good for detecting the color of each sphero, you will see the following progression of images from left to right:</li>
-</ol>
+<li>Launch the sphero finder node by running:</li></ol>
+`roslaunch maze_control spheromini_finder.launch`. Assuming your color calibration is good for detecting the color of each sphero, you will see the following progression of images from left to right:
 
 |Waiting for map calibration... | Detection of Prey and Predator Spheros|
 |:--------------:|:-------------:|
@@ -149,8 +150,8 @@ roslaunch maze_control calibrate_predator.launch
 After running the launch file, you will need to click the image feed from the **sphero_finder** node and then hit the "**f**" key in order to begin the calibration process. Hitting the "**f**" key will tell the **sphero_finder** node to send over the waypoint information to the calibration node so that the global frame of the maze can be defined relative to the sphero frame. The global frame is considered to have its positive x-axis along the vector from cell "**M1**" to cell "**M17**" which is the middle most row of cells of the octagon stretching along its width. Once the calibration starts, the sphero will move for 1 second on its positive x-axis. The node will then find the offset angle between the vector defined by the start and end position of the robot's trajectory and the vector defining the global frame. It will then find the angle offset between the global frame and the camera frame and add that to the total angle offset representing the angle between the robot's x-axis and the camera's x-axis. This offset is then sent out using a custom service to be available for the **sphero_control** node.
 
 <ol start="7">
-<li>The sphero control node can be started by running `roslaunch maze_control spheromomini_control` in a terminal. This node is responsible for controlling each sphero such that they each follow their respective paths and do so in a way where one is not too many steps ahead of the other one on its path than the other one is on its path. Each sphero is controlled using PID control using an adapted [PID control library](https://github.com/hydrosquall/SpheroTeam/blob/master/SpheroTeam/pidController.py) meant for sphero control which was originally inspired by a [PID control function](https://www.mathworks.com/matlabcentral/fileexchange/52481-sphero-connectivity-package) found in a Sphero control library in Matlab's File Exchange</li>
-</ol>
+<li>The sphero control node can be started by running:</li></ol>
+`roslaunch maze_control spheromomini_control` in a terminal. This node is responsible for controlling each sphero such that they each follow their respective paths and do so in a way where one is not too many steps ahead of the other one on its path than the other one is on its path. Each sphero is controlled using PID control using an adapted [PID control library](https://github.com/hydrosquall/SpheroTeam/blob/master/SpheroTeam/pidController.py) meant for sphero control which was originally inspired by a [PID control function](https://www.mathworks.com/matlabcentral/fileexchange/52481-sphero-connectivity-package) found in a Sphero control library in Matlab's File Exchange
 
 ## Demo & Future Improvements
 #### Video
