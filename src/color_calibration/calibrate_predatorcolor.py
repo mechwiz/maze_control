@@ -305,9 +305,9 @@ def main():
     ic = sphero_finder()
     rospy.sleep(1)
 
-    r,g,b = rospy.get_param('spheromini_finder/prey_color')
+    r,g,b = rospy.get_param('prey/prey_mini_setup/color',[0,255,0])
     ic.prey_color_pub.publish(ColorRGBA(r,g,b,1))
-    r,g,b = rospy.get_param('spheromini_finder/predator_color')
+    r,g,b = rospy.get_param('predator/predator_mini_setup/color',[255,0,255])
     ic.predator_color_pub.publish(ColorRGBA(r,g,b,1))
     rospack = rospkg.RosPack()
     with open(os.path.join(rospack.get_path("maze_control"), "src", "path.csv")) as csvfile:

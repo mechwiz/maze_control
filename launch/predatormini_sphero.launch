@@ -1,3 +1,5 @@
 <launch>
-    <node pkg="maze_control" type="predator_mini_setup.py" name="predator_mini_setup" ns="predator" output="screen"/>
+    <node pkg="maze_control" type="predator_mini_setup.py" name="predator_mini_setup" ns="predator" output="screen">
+    <rosparam command="load" file="$(find maze_control)/param/predator.yaml"/>
+    </node>
 </launch>

@@ -34,13 +34,13 @@ def main():
     rospy.init_node('predatormini_setup', anonymous=False)
     ic = predatormini_setup()
     rospy.sleep(1)
-
+    bt_addr = rospy.get_param('predator_mini_setup/bt_address')
+    ic.predator = sphero_mini.sphero_mini(bt_addr, verbosity = 1)
     # ic.predator = sphero_mini.sphero_mini('F0:93:98:6B:98:79', verbosity = 1)
-    ic.predator = sphero_mini.sphero_mini('EF:C4:6B:A5:3A:F9', verbosity = 1)
     print("Connected to Predator")
 
     rospy.sleep(1)
-    r,g,b = rospy.get_param('/spheromini_finder/predator_color')
+    r,g,b = rospy.get_param('predator_mini_setup/color')
     ic.predator.setLEDColor(red=int(r),green=int(g),blue=int(b))
 
     try:
