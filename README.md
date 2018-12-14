@@ -90,7 +90,10 @@ You will notice that the **Result** and **Keypoint Matches** frames will change 
 
 <ol start="3">
 <li>Launch the board setup node by running:</li></ol>
-`roslaunch maze_control maze_setup.launch`.
+
+```
+roslaunch maze_control maze_setup.launch
+```
 Assuming your color calibration is good for detecting the maze contour and the red tape, you will see the following progression of images from left to right.
 
 |Detection of Maze Contour and Red Tape | Interpolation of Cell Points|
@@ -127,7 +130,11 @@ The terminal will send a message when each sphero has been connected to succesfu
 
 <ol start="5">
 <li>Launch the sphero finder node by running:</li></ol>
-`roslaunch maze_control spheromini_finder.launch`. Assuming your color calibration is good for detecting the color of each sphero, you will see the following progression of images from left to right:
+
+```
+roslaunch maze_control spheromini_finder.launch
+```
+Assuming your color calibration is good for detecting the color of each sphero, you will see the following progression of images from left to right:
 
 |Waiting for map calibration... | Detection of Prey and Predator Spheros|
 |:--------------:|:-------------:|
@@ -151,7 +158,11 @@ After running the launch file, you will need to click the image feed from the **
 
 <ol start="7">
 <li>The sphero control node can be started by running:</li></ol>
-`roslaunch maze_control spheromomini_control` in a terminal. This node is responsible for controlling each sphero such that they each follow their respective paths and do so in a way where one is not too many steps ahead of the other one on its path than the other one is on its path. Each sphero is controlled using PID control using an adapted [PID control library](https://github.com/hydrosquall/SpheroTeam/blob/master/SpheroTeam/pidController.py) meant for sphero control which was originally inspired by a [PID control function](https://www.mathworks.com/matlabcentral/fileexchange/52481-sphero-connectivity-package) found in a Sphero control library in Matlab's File Exchange
+
+```
+roslaunch maze_control spheromomini_control
+```
+in a terminal. This node is responsible for controlling each sphero such that they each follow their respective paths and do so in a way where one is not too many steps ahead of the other one on its path than the other one is on its path. Each sphero is controlled using PID control using an adapted [PID control library](https://github.com/hydrosquall/SpheroTeam/blob/master/SpheroTeam/pidController.py) meant for sphero control which was originally inspired by a [PID control function](https://www.mathworks.com/matlabcentral/fileexchange/52481-sphero-connectivity-package) found in a Sphero control library in Matlab's File Exchange
 
 ## Demo & Future Improvements
 #### Video
