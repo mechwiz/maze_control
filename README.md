@@ -140,7 +140,7 @@ Assuming your color calibration is good for detecting the color of each sphero, 
 
 |Waiting for map calibration... | Detection of Prey and Predator Spheros|
 |:--------------:|:-------------:|
-|<img src="imgs/maze_setup1.png" width="500px" alt="" /> | <img src="imgs/maze_setup2.png" width="500px" alt="" /> |
+|<img src="imgs/sphero_finder1.png" width="500px" alt="" /> | <img src="imgs/sphero_finder2.png" width="500px" alt="" /> |
 
 First, an image feed of just the stitched image should appear like the one on the left above. Before the node can find the spheros, it must know the layout of the maze contour so that it knows what area to look within and what to ignore. Since we already know this from the last step, all that needs to be done is to let the **maze_setup** node know when to send over this information. To do this, click on the image feed from the **maze_setup** node and hit the "**c**" key when you see a good feed (like the one shown in the last step). Once you do this, you will see a snapshot of the current waypoint configuration of the maze along with the bounded maze contour show up on the image feed from the **sphero_finder** node. If you still don't like the configuration, you may click the image feed from the **maze_setup** node and hit the "**c**" key again until you are satisfied. Once you finish this process, you may terminate the **maze_setup** node by typing "Cntrl+c" into the terminal running that launch file in order to free up some processing power on your machine.
 
