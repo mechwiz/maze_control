@@ -28,7 +28,7 @@ roslaunch maze_control redtapecolor_calibration.launch
 
 Move the sliders around until you are satisfied with the resulting boundaries as shown below:
 
-![redtape](../../imgs/redtape.png])
+![redtape](../../imgs/redtape.png)
 
 Record the HSV upper and lower boundaries and enter them into the lower and upper redtape parameters in the corresponding yaml file [here](../../param/mazecolor_calib.yaml)
 
