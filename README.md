@@ -186,6 +186,11 @@ Here is a short video gif of the sphero control working in the small-scale maze.
 
 Here is a short video of the sphero control working in the full-scale maze.
 
+<p float="middle">
+  <img src="imgs/full_scale_demo.gif" width="400" />
+  <img src="imgs/full_scale_demo_real.gif" width="400" />
+</p>
+
 #### Future Improvments
 - There will be a clear Vinyl mat put on the maze to make any discontinuties on the surface caused by wood warping to become one continous surface that the spheros will have no trouble rolling on.
 - Adding more cameras for when the obstacle height becomes taller (when mice will be put into the maze) due to FOV obstruction
