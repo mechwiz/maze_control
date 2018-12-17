@@ -15,7 +15,7 @@ roslaunch maze_control boardcolor_calibration.launch
 
 Move the sliders around until you are satisfied with the resulting boundaries as shown below:
 
-![imgs/boardcolor.png]
+![../../imgs/boardcolor.png]
 
 Record the HSV upper and lower boundaries and enter them into the lower and upper birch parameters in the corresponding yaml file [here](../../param/mazecolor_calib.yaml)
 
@@ -28,7 +28,7 @@ roslaunch maze_control redtapecolor_calibration.launch
 
 Move the sliders around until you are satisfied with the resulting boundaries as shown below:
 
-![imgs/redtape.png]
+![../../imgs/redtape.png]
 
 Record the HSV upper and lower boundaries and enter them into the lower and upper redtape parameters in the corresponding yaml file [here](../../param/mazecolor_calib.yaml)
 
@@ -39,9 +39,9 @@ In order to find good HSV boundaries for color segmentation for finding the prey
 roslaunch maze_control preycolor_calibration.launch
 ```
 
-Move the sliders around until you are satisfied with the resulting boundaries as shown below:
+Move the sliders around until you are satisfied with the resulting boundaries as shown below. If you would like to have the program circle the prey and predator spheros for feedback purposes, make sure to hit the "**c**" key after clicking on the **maze_node** image feed.
 
-![imgs/preycolor.png]
+![../../imgs/preycolor.png]
 
 Record the HSV upper and lower boundaries and enter them into the lower and upper prey color parameters in the corresponding yaml file [here](../../param/spherocolor_calib.yaml)
 
@@ -52,8 +52,8 @@ In order to find good HSV boundaries for color segmentation for finding the pred
 roslaunch maze_control predatorcolor_calibration.launch
 ```
 
-Move the sliders around until you are satisfied with the resulting boundaries as shown below:
+Move the sliders around until you are satisfied with the resulting boundaries as shown below. If you would like to have the program circle the prey and predator spheros for feedback purposes, make sure to hit the "**c**" key after clicking on the **maze_node** image feed.
 
-![imgs/predatorcolor.png]
+![../../imgs/predatorcolor.png]
 
 Record the HSV upper and lower boundaries and enter them into the lower and upper predator color parameters in the corresponding yaml file [here](../../param/spherocolor_calib.yaml)
