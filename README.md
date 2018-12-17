@@ -180,8 +180,8 @@ The gains and parameters for the controls can be modified [here](param/sphero_co
 Here is a short video gif of the sphero control working in the small-scale maze.
 
 <p float="middle">
-  <img src="imgs/small_scale_demo.gif" width="500" />
-  <img src="imgs/small_scale_demo_real.gif" width="500" />
+  <img src="imgs/small_scale_demo.gif" width="400" />
+  <img src="imgs/small_scale_demo_real.gif" width="400" />
 </p>
 
 Here is a short video of the sphero control working in the full-scale maze.
