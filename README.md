@@ -13,7 +13,7 @@ The goal of this project is to demonstrate the effect of planning-depth in regar
 - Sphero Control with ROS
 - Image Processing to determine robot location in maze
 
-To read more about each part, see my portfolio post [here](https://mechwiz.github.io/Portfolio/prey.html). This repo's purpose is to provide the user with a ROS package to perform sphero control within the maze using computer vision feedback. This covers the latter 2 parts of the project mentioned above (**Sphero Control with ROS** and **Image proecessing to determine robot location in maze**).
+To read more about each part, see my portfolio post [here](https://mechwiz.github.io/Portfolio/prey.html). This repo's purpose is to provide the user with a ROS package to perform sphero control within the maze using computer vision feedback. This covers the latter 2 parts of the project mentioned above (**Sphero Control with ROS** and **Image proecessing to determine robot location in maze**). To read more about the maze fabrication, see my other repo [here](https://github.com/mechwiz/maze_world).
 
 ## Package Installation
 #### Prerequisits
@@ -177,6 +177,10 @@ The gains and parameters for the controls can be modified [here](param/sphero_co
 
 ## Demo & Future Improvements
 #### Video
+Here is a short video of the sphero control working in the small-scale maze.
+[![small_scale_vid](https://drive.google.com/file/d/1OGv4KQwtq5__C7KDZStByIZnlpOaXJxY/view?usp=sharing)
+
+Here is a short video of the sphero control working in the full-scale maze.
 
 #### Future Improvments
 - There will be a clear Vinyl mat put on the maze to make any discontinuties on the surface caused by wood warping to become one continous surface that the spheros will have no trouble rolling on.
@@ -184,4 +188,3 @@ The gains and parameters for the controls can be modified [here](param/sphero_co
 - Adding in capability to track the path a mouse moves within the maze when chased by a sphero
 - Adding in Real-Time planning capability based on any scenarios modeled within the maze
 - Adding in obstacle detection for when real-time planning is actually feasible. Currently it takes days to calculate pre-planned paths for one scenario.
-
