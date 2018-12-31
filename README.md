@@ -72,7 +72,9 @@ There are several steps and sidesteps to implementing this package which is disc
 
 1. Plug in the usb cable from camera 1 (signified by a sticker on the cable) into your computer first, and the second cable afterwards. This must be done in this order because the package assumes camera 1 to be the _left_ image and camera 2 to be the _right_ image that will stitched together.
 
-2. Launch the cameras and image stitching node together by running: `roslaunch maze_control start_cam_stitch.launch`. You can also launch them seperately by first running: `roslaunch maze_control usb_2cams.launch` and then `roslaunch maze_control stitch_images.launch`. After doing this, you will notice the following images.
+2. Next comes the image stitching node which will calculate the homography matrix from one camera frame into the other. For the current camera configuration in the lab, there is a default homography matrix that has already been calcuated and is stored in a parameter file [here](param/combine_images.yaml). This makes for faster setup and does not require taking off the vinyl mat on the maze floor. To run this node, simply launch the cameras and image stitching node together by running: `roslaunch maze_control start_cam_stitch.launch`. An image feed will appear of the resulting stitched image.
+
+If you want to recalculate the homography matrix, then you probably will have to remove the vinyl mat from the maze floor. This is because the glare from the lights on the mat seems to interfere with succesfull image-stitching results. Before running anything, you will need to modify the default homography param [file](param/combine_images.yaml) by commenting out the first line and uncommenting the second line. Then start the cameras by running: `roslaunch maze_control usb_2cams.launch`. In a separate terminal, run: `roslaunch maze_control stitch_images.launch`. After doing this, the following images will appear (assuming the homography matrix has not been previously calculated).
 
 |Left Frame Camera Feed | Right Frame Camera Feed|
 |:--------------:|:-------------:|
@@ -86,7 +88,24 @@ There are several steps and sidesteps to implementing this package which is disc
 |:---:|
 |<img src="imgs/Keypoint_Matches.png" alt="" /> |
 
-You will notice that the **Result** and **Keypoint Matches** frames will change every 0.5 seconds. This is intentional. The idea behind this node is to let you choose the best homography matrix to use that will transform the right hand frame into the left-hand frame so that the resulting image looks literally like a stitched image. Within each 0.5 seconds, the node will calculate a new homagraphy matrix based on the Key Point Matches between the left and right hand frames. If the key-point pairs are matched together with horizontal lines at what seems to be the right places, chances are that it's a good match. Thus, the resulting stitched and key-point images are shown to you so that you have visual feedback to choose the best homography matrix. **The way to choose the best matrix** is by clicking the _Stitched Frame_ image with your mouse, wait until you see a good match, and then hit the "**c**" key on your keyboard. Upon completion of this process, the left, right, and keypoint images will be closed. The homography matrix for the chosen image will be cached and the publishing rate of the stitched image will be restored to 30 hz.
+You will notice that the **Result** and **Keypoint Matches** frames will change every 0.5 seconds. This is intentional. The idea behind this node is to let you choose the best homography matrix to use that will transform the right hand frame into the left-hand frame so that the resulting image looks literally like a stitched image. Within each 0.5 seconds, the node will calculate a new homagraphy matrix based on the Key Point Matches between the left and right hand frames and print them to the terminal screen. If the key-point pairs are matched together with horizontal lines at what seems to be the right places, chances are that it's a good match. Thus, the resulting stitched and key-point images are shown to you so that you have visual feedback to choose the best homography matrix. **The way to choose the best matrix** is by clicking the _Stitched Frame_ image with your mouse, wait until you see a good match, and then hit the "**c**" key on your keyboard. Upon completion of this process, the left, right, and keypoint images will be closed. The homography matrix for the chosen image will be cached and the publishing rate of the stitched image will be restored to 30 hz.
+
+In order to cache the chosen homography matrix for future setups, copy the most recent homography matrix printed out on the terminal (such as the last matrix shown in the example below) and paste it into the homography param [file](param/combine_images.yaml) in place of the default matrix currently there. Don't forget to add commas where appropiate and to uncomment the newly added homography parameter (also comment out the homography parameter with the empy brackets as you do not need it anymore).
+
+```
+[INFO] homogrpahy is:
+[[  1.03363213e+00  -3.57441486e-02   3.74792496e+02]
+ [  3.90948948e-02   1.02540364e+00  -7.50771532e+00]
+ [  1.47377611e-05   1.30097634e-05   1.00000000e+00]]
+[INFO] homogrpahy is:
+[[  1.02575078e+00  -3.76005084e-02   3.75728508e+02]
+ [  3.74193656e-02   1.02444932e+00  -7.34540110e+00]
+ [  8.30383781e-06   1.25134511e-05   1.00000000e+00]]
+[INFO] homogrpahy is:
+[[  1.03692122e+00  -3.83169369e-02   3.75136508e+02]
+ [  4.02631785e-02   1.02409156e+00  -7.46516699e+00]
+ [  1.70323612e-05   1.01730831e-05   1.00000000e+00]]
+```
 
 <ol start="3">
 <li>Launch the board setup node by running:</li></ol>
