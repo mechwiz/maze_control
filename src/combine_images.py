@@ -26,6 +26,7 @@ class combine_images:
         self.keytime = 500
         self.left = False
         self.right = False
+        self.homog = rospy.get_param('combine_images/homography',None)
         self.image_left_sub = rospy.Subscriber("/usb_cam1/image_raw",Image,self.image_leftcb)
         self.image_right_sub = rospy.Subscriber("/usb_cam2/image_raw",Image,self.image_rightcb)
         self.image_combine_pub = rospy.Publisher("combined_image",Image,queue_size=1)
@@ -58,6 +59,12 @@ class combine_images:
         # IMPORTANT: you might have to change this line of code
         # depending on how your cameras are oriented; frames
         # should be supplied in left-to-right order
+
+        if self.homog is not None and len(self.homog) == 3:
+            self.stitcher.cachedH = np.array(self.homog)
+            self.stitcher.isCal = True
+            self.keytime = 1
+
         if self.stitcher.isCal == True:
             showMatch = False
         else:
@@ -76,6 +83,9 @@ class combine_images:
         if result is None:
             print("[INFO] homography could not be computed")
             return
+        else:
+            print("[INFO] homogrpahy is:")
+            print(self.stitcher.cachedH)
 
         # show the output images
         cv2.imshow("Result", result)
