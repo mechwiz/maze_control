@@ -84,8 +84,9 @@ class combine_images:
             print("[INFO] homography could not be computed")
             return
         else:
-            print("[INFO] homogrpahy is:")
-            print(self.stitcher.cachedH)
+            if self.stitcher.isCal == False:
+                print("[INFO] homogrpahy is:")
+                print(self.stitcher.cachedH)
 
         # show the output images
         cv2.imshow("Result", result)
