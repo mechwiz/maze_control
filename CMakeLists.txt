@@ -59,6 +59,7 @@ add_message_files(
 add_service_files(
   FILES
   offset.srv
+  waypoint.srv
 #   Service2.srv
 )
 

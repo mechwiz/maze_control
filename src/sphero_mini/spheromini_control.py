@@ -8,7 +8,7 @@ import math
 import time
 
 from maze_control.msg import IntList, Waypoints
-from maze_control.srv import offset
+from maze_control.srv import offset, waypoint
 from geometry_msgs.msg import Point, Twist
 from std_msgs.msg import ColorRGBA, Float32, Int16
 from nav_msgs.msg import Odometry
@@ -53,7 +53,7 @@ class sphero_control:
         self.maxSpeed = rospy.get_param('spheromini_control/maxSpeed')
         self.minSpeed = rospy.get_param('spheromini_control/minSpeed')
         self.resumeSpeed = rospy.get_param('spheromini_control/resumeSpeed')
-        self.waypnt_sub = rospy.Subscriber("/waypoints_fixed",Waypoints,self.waypntcb)
+        # self.waypnt_sub = rospy.Subscriber("/waypoints_fixed",Waypoints,self.waypntcb)
         self.prey_sub = rospy.Subscriber("/center_point1",Point,self.prey_cb)
         self.predator_sub = rospy.Subscriber("/center_point2",Point,self.predator_cb)
         self.prey_vel_pub = rospy.Publisher("prey/cmd_vel",Int16,queue_size=1)
@@ -147,8 +147,8 @@ class sphero_control:
 
     def waypntcb(self,data):
         alist = []
-        for i in range(len(data.data)-8):
-            alist.append(data.data[i].data)
+        for i in range(len(data.data.data)-8):
+            alist.append(data.data.data[i].data)
         self.waypnts = alist
 
         lvl = 10
@@ -295,6 +295,14 @@ def main():
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
 
+    getWaypoints = rospy.ServiceProxy("waypoints_fixed",waypoint)
+    rospy.wait_for_service("waypoints_fixed")
+    try:
+        waypoint_list = getWaypoints()
+        pass
+    except rospy.ServiceException, e:
+        print "Service call failed: %s"%e
+
     rospy.init_node('sphero_control', anonymous=False)
     ic = sphero_control()
 
@@ -306,6 +314,7 @@ def main():
             ic.predator_path.append(row[1])
     ic.prey_offset = prey_offset.offset.data
     ic.predator_offset = predator_offset.offset.data
+    ic.waypntcb(waypoint_list)
 
     try:
         rospy.spin()

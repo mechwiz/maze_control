@@ -5,6 +5,7 @@ import math
 import time
 
 from maze_control.msg import IntList, Waypoints
+from maze_control.srv import waypoint
 from geometry_msgs.msg import Point, Twist
 from std_msgs.msg import Float32, Int16
 from maze_control.srv import offset
@@ -21,7 +22,6 @@ class predator_calibrate:
         self.y_list = []
         self.predator_offset = 0
         self.calibrated = False
-        self.waypnt_sub = rospy.Subscriber("/waypoints_fixed",Waypoints,self.waypntcb)
         self.predator_sub = rospy.Subscriber("/center_point2",Point,self.predator_cb)
         self.predator_vel_pub = rospy.Publisher("predator/cmd_vel",Int16,queue_size=1)
         self.predator_heading_pub = rospy.Publisher("predator/set_heading",Int16,queue_size=1)
@@ -82,8 +82,8 @@ class predator_calibrate:
 
     def waypntcb(self,data):
         alist = []
-        for i in range(len(data.data)-8):
-            alist.append(data.data[i].data)
+        for i in range(len(data.data.data)-8):
+            alist.append(data.data.data[i].data)
         self.waypnts = alist
 
         lvl = 10
@@ -172,8 +172,19 @@ def vector_to_target(currentX, currentY, targetX, targetY):
     return angle, distance
 
 def main():
+    getWaypoints = rospy.ServiceProxy("waypoints_fixed",waypoint)
+    rospy.wait_for_service("waypoints_fixed")
+    try:
+        waypoint_list = getWaypoints()
+        pass
+    except rospy.ServiceException, e:
+        print "Service call failed: %s"%e
+
     rospy.init_node('predator_calibrate', anonymous=False)
     ic = predator_calibrate()
+    rospy.sleep(1)
+    ic.waypntcb(waypoint_list)
+
     try:
         rospy.spin()
     except KeyboardInterrupt:

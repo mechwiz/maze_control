@@ -8,6 +8,7 @@ import csv
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
 from maze_control.msg import IntList, Waypoints
+from maze_control.srv import waypoint
 from geometry_msgs.msg import Point
 from std_msgs.msg import ColorRGBA
 
@@ -34,11 +35,15 @@ class sphero_finder:
         self.image_sub = rospy.Subscriber("/combined_image",Image,self.imagecb)
         self.image_sub2 = rospy.Subscriber("/warped_image",Image,self.warpedcb)
         self.waypnts_sub = rospy.Subscriber("/waypoints",Waypoints,self.waypntcb)
-        self.list_pub = rospy.Publisher("waypoints_fixed",Waypoints,queue_size=10)
         self.image_pub = rospy.Publisher("center_point1",Point,queue_size=1)
         self.image_pub2 = rospy.Publisher("center_point2",Point,queue_size=1)
         self.prey_color_pub = rospy.Publisher("prey/set_color",ColorRGBA,queue_size=1)
         self.predator_color_pub = rospy.Publisher("predator/set_color",ColorRGBA,queue_size=1)
+
+    def waypnt_srv(self,req):
+        if len(self.waypnts)>0:
+            rospy.loginfo('Points Captured')
+            return self.raw_waypnts
 
     def warpedcb(self,data):
         try:
@@ -195,10 +200,8 @@ class sphero_finder:
                 cv2.imshow("Warped pic",self.warpedpic)
             cv2.imshow("Converted Image",np.hstack([img_original,res]))
 
-            k = cv2.waitKey(500)
-            if k == ord('f') and len(self.waypnts)>0:
-                self.list_pub.publish(self.raw_waypnts)
-                rospy.loginfo('Points Captured')
+            cv2.waitKey(500)
+
         except CvBridgeError, e:
             print("==[CAMERA MANAGER]==", e)
 
