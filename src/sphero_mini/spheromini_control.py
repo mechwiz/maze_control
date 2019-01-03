@@ -57,7 +57,6 @@ class sphero_control:
         self.maxSpeed = rospy.get_param('spheromini_control/maxSpeed')
         self.minSpeed = rospy.get_param('spheromini_control/minSpeed')
         self.resumeSpeed = rospy.get_param('spheromini_control/resumeSpeed')
-        # self.waypnt_sub = rospy.Subscriber("/waypoints_fixed",Waypoints,self.waypntcb)
         self.prey_sub = rospy.Subscriber("/center_point1",Point,self.prey_cb)
         self.predator_sub = rospy.Subscriber("/center_point2",Point,self.predator_cb)
         self.prey_vel_pub = rospy.Publisher("prey/cmd_vel",Int16,queue_size=1)
@@ -87,7 +86,6 @@ class sphero_control:
                     self.prey_boost += 10
                     outspeed += self.prey_boost
                     outspeed = min(outspeed, 255)
-                    print 'prey',outspeed
                 else:
                     self.prey_boost = 0
                 self.prey_distance.pop(0)
@@ -140,7 +138,6 @@ class sphero_control:
                     self.predator_boost += 10
                     outspeed += self.predator_boost
                     outspeed = min(outspeed, 255)
-                    print 'predator',outspeed
                 else:
                     self.predator_boost = 0
                 self.predator_distance.pop(0)
