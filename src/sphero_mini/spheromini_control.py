@@ -26,6 +26,10 @@ class sphero_control:
         self.prey_percent = 0
         self.predator_percent = 0
         self.prey_error = 0
+        self.prey_boost = 0
+        self.predator_boost = 0
+        self.prey_distance = []
+        self.predator_distance = []
         self.predator_error = 0
         self.kp = rospy.get_param('spheromini_control/kp_track')
         self.prey_limit = True
@@ -73,13 +77,26 @@ class sphero_control:
             self.prey_percent = self.get_precentTraj(targetnum,'prey',[xt,yt],[x,y])
 
             angle, distance = vector_to_target(x,yt,xt,y)
+
             outspeed = self.prey_cntrl.getPIDSpeed(distance,self.Kp,self.Ki,self.Kd,self.stopRadius,self.maxSpeed,self.minSpeed,self.resumeSpeed) - self.prey_error
             outspeed = max(outspeed,0)
+
+            self.prey_distance.append(distance)
+            if len(self.prey_distance) == 10:
+                if abs(distance-sum(self.prey_distance)/10.0) < 5:
+                    self.prey_boost += 10
+                    outspeed += self.prey_boost
+                    outspeed = min(outspeed, 255)
+                    print 'prey',outspeed
+                else:
+                    self.prey_boost = 0
+                self.prey_distance.pop(0)
 
             if distance < 20:
                 self.prey_achieved.append(self.prey_pathpnt[targetnum])
                 targetnum = len(self.prey_achieved)
                 if len(self.prey_achieved) < len(self.prey_path):
+                    self.prey_distance = []
                     xt,yt = self.prey_pathpnt[targetnum]
                     angle, distance = vector_to_target(x,yt,xt,y)
                     self.prey_cntrl.reset()
@@ -117,10 +134,22 @@ class sphero_control:
             outspeed = self.predator_cntrl.getPIDSpeed(distance,self.Kp,self.Ki,self.Kd,self.stopRadius,self.maxSpeed,self.minSpeed,self.resumeSpeed) - self.predator_error
             outspeed = max(outspeed,0)
 
+            self.predator_distance.append(distance)
+            if len(self.predator_distance) == 10:
+                if abs(distance-sum(self.predator_distance)/10.0) < 5:
+                    self.predator_boost += 10
+                    outspeed += self.predator_boost
+                    outspeed = min(outspeed, 255)
+                    print 'predator',outspeed
+                else:
+                    self.predator_boost = 0
+                self.predator_distance.pop(0)
+
             if distance < 20:
                 self.predator_achieved.append(self.predator_pathpnt[targetnum])
                 targetnum = len(self.predator_achieved)
                 if len(self.predator_achieved) < len(self.predator_path):
+                    self.predator_distance = []
                     xt,yt = self.predator_pathpnt[targetnum]
                     angle, distance = vector_to_target(x,yt,xt,y)
                     self.predator_cntrl.reset()
