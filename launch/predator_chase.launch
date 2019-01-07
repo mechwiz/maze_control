@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="maze_control" type="predator_chase.py" name="predator_chase" output="screen">
+    <rosparam command="load" file="$(find maze_control)/param/sphero_control.yaml"/>
+    </node>
+</launch>
