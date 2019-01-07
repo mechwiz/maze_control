@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="maze_control" type="detect_obstacles.py" name="detect_obstacles" output="screen">
+    <rosparam command="load" file="$(find maze_control)/param/obstaclecolor_calib.yaml"/>
+    </node>
+</launch>
