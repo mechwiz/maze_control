@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="maze_control" type="spheromini_tracker.py" name="spheromini_tracker" output="screen">
+    <rosparam command="load" file="$(find maze_control)/param/spherocolor_calib.yaml"/>
+    </node>
+</launch>
