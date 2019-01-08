@@ -1,2 +1,2 @@
-lower_obst: [1,0,60]
-upper_obst: [30,255,255]
+lower_obst: [35,100,190]
+upper_obst: [50,255,255]

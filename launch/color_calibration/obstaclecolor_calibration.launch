@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="maze_control" type="calibrate_obstacles.py" name="calibrate_obstacles" output="screen"/>
+</launch>

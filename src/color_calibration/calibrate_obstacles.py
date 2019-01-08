@@ -45,25 +45,25 @@ class sphero_tracker:
 
             # Convert Image message to CV image with blue-green-red color order (bgr8)
             # create trackbars for color change
-            # cv2.namedWindow('Converted Image')
-            # cv2.createTrackbar('Lower Hue','Converted Image',0,180,nothing)
-            # cv2.createTrackbar('Lower Sat','Converted Image',0,255,nothing)
-            # cv2.createTrackbar('Lower Value','Converted Image',0,255,nothing)
-            # cv2.createTrackbar('Upper Hue','Converted Image',0,180,nothing)
-            # cv2.createTrackbar('Upper Sat','Converted Image',0,255,nothing)
-            # cv2.createTrackbar('Upper Value','Converted Image',0,255,nothing)
-            # switch = '0 : OFF \n1 : ON'
-            # cv2.createTrackbar(switch, 'Converted Image',0,1,nothing)
+            cv2.namedWindow('Converted Image')
+            cv2.createTrackbar('Lower Hue','Converted Image',self.lower_obst[0],180,nothing)
+            cv2.createTrackbar('Lower Sat','Converted Image',self.lower_obst[1],255,nothing)
+            cv2.createTrackbar('Lower Value','Converted Image',self.lower_obst[2],255,nothing)
+            cv2.createTrackbar('Upper Hue','Converted Image',self.upper_obst[0],180,nothing)
+            cv2.createTrackbar('Upper Sat','Converted Image',self.upper_obst[1],255,nothing)
+            cv2.createTrackbar('Upper Value','Converted Image',self.upper_obst[2],255,nothing)
+            switch = '0 : OFF \n1 : ON'
+            cv2.createTrackbar(switch, 'Converted Image',0,1,nothing)
 
-            # lowh = cv2.getTrackbarPos('Lower Hue','Converted Image')
-            # lows = cv2.getTrackbarPos('Lower Sat','Converted Image')
-            # lowv = cv2.getTrackbarPos('Lower Value','Converted Image')
-            # upph = cv2.getTrackbarPos('Upper Hue','Converted Image')
-            # upps = cv2.getTrackbarPos('Upper Sat','Converted Image')
-            # uppv= cv2.getTrackbarPos('Upper Value','Converted Image')
+            lowh = cv2.getTrackbarPos('Lower Hue','Converted Image')
+            lows = cv2.getTrackbarPos('Lower Sat','Converted Image')
+            lowv = cv2.getTrackbarPos('Lower Value','Converted Image')
+            upph = cv2.getTrackbarPos('Upper Hue','Converted Image')
+            upps = cv2.getTrackbarPos('Upper Sat','Converted Image')
+            uppv= cv2.getTrackbarPos('Upper Value','Converted Image')
 
-            # lower_red = np.array([lowh,lows,lowv])
-            # upper_red = np.array([upph,upps,uppv])
+            lower_obst = np.array([lowh,lows,lowv])
+            upper_obst = np.array([upph,upps,uppv])
 
             # lower_green = np.array([1,125,255])
             # upper_green = np.array([100,255,255])
@@ -72,8 +72,8 @@ class sphero_tracker:
 
             img_original = self.bridge.imgmsg_to_cv2(data, "bgr8")
             hsv = cv2.cvtColor(img_original,cv2.COLOR_BGR2HSV)
-            mask = cv2.inRange(hsv,self.lower_obst, self.upper_obst)
-            # res =cv2.bitwise_and(img_original,img_original,mask= mask2)
+            mask = cv2.inRange(hsv,lower_obst, upper_obst)
+            res =cv2.bitwise_and(img_original,img_original,mask= mask)
 
             contour = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
 
@@ -87,7 +87,7 @@ class sphero_tracker:
                             if radius > 5:
                                 # center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
-                                # res = cv2.circle(res,(int(x),int(y)),int(radius),(0,255,0),2)
+                                res = cv2.circle(res,(int(x),int(y)),int(radius),(0,255,0),2)
                                 img_original = cv2.circle(img_original,(int(x),int(y)),int(radius),(0,255,0),2)
 
                                 close_idx = closest_node([int(x),int(y)],self.waypnt_vals)
@@ -155,13 +155,14 @@ class sphero_tracker:
             if len(self.obstacle_list) > 0:
                 for key in self.hex_dict:
                     # print np.array(self.hex_dict[key],np.int32)
-                    cv2.polylines(img_original,[np.array(self.hex_dict[key],np.int32)],True,(255,0,0),2)
+                    cv2.polylines(img_original,[np.array(self.hex_dict[key],np.int32)],True,(0,255,0),1)
+                    cv2.polylines(res,[np.array(self.hex_dict[key],np.int32)],True,(0,255,0),1)
 
 
-            cv2.imshow("Converted Image2",img_original)
-            # cv2.imshow("Converted Image",np.hstack([img_original,res]))
+            # cv2.imshow("Converted Image2",img_original)
+            cv2.imshow("Converted Image",np.hstack([img_original,res]))
 
-            k = cv2.waitKey(3)
+            k = cv2.waitKey(500)
             if k == ord('c') and len(self.obstacle_list)>0:
                 if os.path.exists(os.path.join(self.rospack.get_path("maze_control"), "src", "obstacles.csv")):
                         os.remove(os.path.join(self.rospack.get_path("maze_control"), "src", "obstacles.csv"))
