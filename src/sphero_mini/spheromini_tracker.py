@@ -4,6 +4,7 @@ import os, rospkg
 import cv2
 import numpy as np
 import csv
+import math
 
 from cv_bridge import CvBridge, CvBridgeError
 from scipy import stats
@@ -27,7 +28,7 @@ class sphero_tracker:
         self.predator_pathpnt = []
         self.predator_path = []
         self.prey_sample = []
-        self.predaotr_sample = []
+        self.predator_sample = []
         self.prey_center = []
         self.predator_center = []
         self.outline = []
@@ -38,6 +39,7 @@ class sphero_tracker:
         self.theta = 0
         self.calib = False
         self.hex_dict = {}
+        self.start_track = False
         self.bridge = CvBridge()
         self.lower_green = np.array(rospy.get_param('spheromini_tracker/lower_prey'))
         self.upper_green = np.array(rospy.get_param('spheromini_tracker/upper_prey'))
@@ -203,7 +205,7 @@ class sphero_tracker:
                         self.image_pub2.publish(self.warped_predator[0],self.warped_predator[1],0)
                         self.predator_center = [self.warped_predator[0],self.warped_predator[1]]
 
-            if len(self.prey_center)>0 and len(self.predator_center)>0 and len(self.waypnts)>0:
+            if self.start_track == True and len(self.prey_center)>0 and len(self.predator_center)>0 and len(self.waypnts)>0:
                 prey_idx = closest_node(self.prey_center,self.waypnt_vals)
                 predator_idx = closest_node(self.predator_center,self.waypnt_vals)
                 self.prey_sample.append(prey_idx)
@@ -238,15 +240,16 @@ class sphero_tracker:
                                 writeCSV = csv.writer(csvfile, delimiter=',')
                                 writeCSV.writerow([self.waypnt_keys[prey_idx],self.waypnt_keys[predator_idx]])
 
-            r = 5
+            r = 17
 
-            if len(self.obstacles) > 0 and self.calib == False:
+            if len(self.waypnts) > 0 and len(self.obstacles) > 0 and self.calib == False:
                 xg1,yg1 = self.waypnt_dict['M1']
                 xg2,yg2 = self.waypnt_dict['M17']
                 pnt_list = []
+                x,y = self.waypnt_dict[self.obstacles[0]]
                 for i in range(6):
-                    xn = r*np.cos(2*pi*i/6.0 + theta) + x
-                    yn = r*np.cos(2*pi*i/6.0 + theta) + y
+                    xn = r*np.cos(2*np.pi*i/6.0) + x
+                    yn = r*np.sin(2*np.pi*i/6.0) + y
                     pnt_list.append([xn,yn])
 
                 xl1,yl1 = pnt_list[0]
@@ -266,8 +269,8 @@ class sphero_tracker:
                     x,y = self.waypnt_dict[obst]
                     self.hex_dict[obst] = []
                     for i in range(6):
-                        xn = r*np.cos(2*pi*i/6.0 + self.theta) + x
-                        yn = r*np.cos(2*pi*i/6.0 + self.theta) + y
+                        xn = r*np.cos(2*np.pi*i/6.0 + self.theta) + x
+                        yn = r*np.sin(2*np.pi*i/6.0 + self.theta) + y
                         self.hex_dict[obst].append([xn,yn])
 
             if len(self.waypnts) > 0:
@@ -281,29 +284,32 @@ class sphero_tracker:
                     cv2.circle(img_original,(wp[0],wp[1]),5,(255,0,0),-1)
 
             if len(self.prey_pathpnt) > 1:
-                cv2.polylines(img_original,[self.prey_pathpnt],False,(255,255,0),2)
+                cv2.polylines(img_original,[np.array(self.prey_pathpnt,np.int32)],False,(255,255,0),2)
 
             if len(self.predator_pathpnt) > 1:
-                cv2.polylines(img_original,[self.predator_pathpnt],False,(0,255,255),2)
+                cv2.polylines(img_original,[np.array(self.predator_pathpnt,np.int32)],False,(0,255,255),2)
 
             if len(self.predator_path) > 0:
-                cv2.polylines(img_original,[self.predator_path],False,(255,0,255),2)
+                cv2.polylines(img_original,[np.array(self.predator_path,np.int32)],False,(255,0,255),2)
 
             if len(self.obstacles) > 0:
                 for key in self.hex_dict:
-                    cv2.polylines(img_original,[self.hex_dict[key]],True,(0,255,0),3)
+                    cv2.polylines(img_original,[np.array(self.hex_dict[key],np.int32)],True,(255,0,0),2)
 
             cv2.imshow("Converted Image2",img_original)
             if self.warpedpic is not None:
                 cv2.imshow("Warped pic",self.warpedpic)
             # cv2.imshow("Converted Image",np.hstack([img_original,res]))
 
-            cv2.waitKey(3)
+            k = cv2.waitKey(3)
+            if k == ord('c'):
+                self.start_track = True
 
         except CvBridgeError, e:
             print("==[CAMERA MANAGER]==", e)
 
     def waypntcb(self,data):
+        self.calib = False
         self.raw_waypnts = data
         alist = []
         outln = []

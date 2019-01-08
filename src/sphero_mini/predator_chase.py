@@ -91,8 +91,9 @@ class predator_chase:
 
                     check = False
                     for p in pnt_list:
-                        for obst in self.obstacle_pnts:
-                            if cv2.pointPolygonTest(np.array(self.hex_dict[obst]),(p[0],p[1]),False)>0:
+                        for obst in self.obstacles:
+                            # print cv2.pointPolygonTest(np.array(self.hex_dict[obst],np.int32),(p[0],p[1]),False)
+                            if cv2.pointPolygonTest(np.array(self.hex_dict[obst],np.int32),(p[0],p[1]),False)>0:
                                 check = True
                                 break
                         if check == True:
@@ -268,14 +269,15 @@ class predator_chase:
             for obst in self.obstacles:
                 self.obstacle_pnts.append(self.waypnt_dict[obst])
 
-        r = 5
+        r = 17
         if len(self.obstacles) > 0 and self.calib == False:
             xg1,yg1 = self.waypnt_dict['M1']
             xg2,yg2 = self.waypnt_dict['M17']
             pnt_list = []
+            x,y = self.waypnt_dict[self.obstacles[0]]
             for i in range(6):
-                xn = r*np.cos(2*pi*i/6.0 + theta) + x
-                yn = r*np.cos(2*pi*i/6.0 + theta) + y
+                xn = r*np.cos(2*np.pi*i/6.0) + x
+                yn = r*np.sin(2*np.pi*i/6.0) + y
                 pnt_list.append([xn,yn])
 
             xl1,yl1 = pnt_list[0]
@@ -295,8 +297,8 @@ class predator_chase:
                 x,y = self.waypnt_dict[obst]
                 self.hex_dict[obst] = []
                 for i in range(6):
-                    xn = r*np.cos(2*pi*i/6.0 + self.theta) + x
-                    yn = r*np.cos(2*pi*i/6.0 + self.theta) + y
+                    xn = r*np.cos(2*np.pi*i/6.0 + self.theta) + x
+                    yn = r*np.sin(2*np.pi*i/6.0 + self.theta) + y
                     self.hex_dict[obst].append([xn,yn])
         # print self.waypnt_dict
         # self.prey_pathpnt = []
@@ -317,22 +319,32 @@ class predator_chase:
 
         while len(frontier) > 0:
             x,y = nextFrontier[1]
-            checkedFrontiers.append(nextFrontier[1])
+            if nextFrontier[1] in checkedFrontiers:
+                pass
+            else:
+                checkedFrontiers.append(nextFrontier[1])
             frontier.pop(str(nextFrontier))
 
             neighbors = self.findNeighbors([x,y])
+            # print '**********'
+            # print [x,y],neighbors
 
-            for n in neighbros:
-                if n is in checkedFrontiers:
+            for n in neighbors:
+                if n in checkedFrontiers:
                     pass
                 else:
-                    nextFrontier = [[x,y],n]
+                    nextFrontier = [[x,y],[n[0],n[1]]]
                     E.append(nextFrontier)
-                    frontier[str(nextFrontier)] = getHeuristic(n,pgoal) + getDistance(E,n)
+                    frontier[str(nextFrontier)] = getHeuristic([n[0],n[1]],pgoal) + getDistance(E,[n[0],n[1]])
 
             fvals = frontier.values()
+            if len(fvals) == 0:
+                break
             min_val = min(fvals)
             nextFrontier = eval(frontier.keys()[fvals.index(min_val)])
+
+            if nextFrontier[1] == pgoal:
+                break
 
         path = getPath(E,pgoal)
         self.predator_pathpnt = []
@@ -350,7 +362,7 @@ class predator_chase:
 
         if len(self.obstacles) > 0:
             for p in self.obstacle_pnts:
-                wpnts.remove(p)
+                wpnts.remove([p[0],p[1]])
         neighbors = []
         close_pnt = wpnts[closest_node(pnt,wpnts)]
         dist = getHeuristic(pnt,close_pnt)
@@ -361,7 +373,7 @@ class predator_chase:
             close_pnt = wpnts[closest_node(pnt,wpnts)]
             d = getHeuristic(pnt,close_pnt)
 
-    return neighbors
+        return neighbors
 
 def getDistance(tree,pnt):
     xp,yp = pnt
@@ -390,13 +402,14 @@ def getPath(tree,pnt):
                 if sublist[0] == [-1,-1]:
                     check = 1
                     break
-    return path.reverse()
+    path.reverse()
+    return path
 
 def getHeuristic(pcurrent,pgoal):
     xc,yc = pcurrent
     xg,yg = pgoal
 
-    deltaX = xc - yg
+    deltaX = xc - xg
     deltaY = yc - yg
 
     distance = math.sqrt(deltaX * deltaX + deltaY * deltaY)
