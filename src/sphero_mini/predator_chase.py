@@ -82,6 +82,7 @@ class predator_chase:
         pnt = [data.x,data.y]
 
         self.prey_actual = pnt
+
         if self.prey_center == pnt:
             pass
         else:
@@ -117,7 +118,7 @@ class predator_chase:
         else:
             self.predator_center = pnt
 
-        if len(self.prey_center)>0 and self.prey_center == self.predator_center and self.prey_center == self.prey_acutal:
+        if len(self.prey_center)>0 and self.prey_center == self.predator_center and self.prey_center == self.prey_actual:
             self.prey_caught = True
 
     def prey_cb(self,data):
@@ -132,7 +133,8 @@ class predator_chase:
             pnt = self.waypnts[closest_node(pnt,self.waypnts)]
             self.predatormove_cb(Point(pnt[0],pnt[1],0))
 
-        if len(self.predator_pathpnt) > 0 and len(self.predator_achieved) < len(self.predator_path) and np.abs(self.predator_offset) > 0 and time.time()-self.predator_time > 0.08 and self.prey_caught == False:
+        if len(self.predator_pathpnt) > 0 and len(self.predator_achieved) < len(self.predator_pathpnt) and np.abs(self.predator_offset) > 0 and time.time()-self.predator_time > 0.08 and self.prey_caught == False:
+
             self.predator_time = time.time()
             y = data.y
             x = data.x
@@ -158,7 +160,7 @@ class predator_chase:
             if distance < 20:
                 self.predator_achieved.append(self.predator_pathpnt[targetnum])
                 targetnum = len(self.predator_achieved)
-                if len(self.predator_achieved) < len(self.predator_path):
+                if len(self.predator_achieved) < len(self.predator_pathpnt):
                     self.predator_distance = []
                     xt,yt = self.predator_pathpnt[targetnum]
                     angle, distance = vector_to_target(x,yt,xt,y)
@@ -348,11 +350,14 @@ class predator_chase:
 
         path = getPath(E,pgoal)
         self.predator_pathpnt = []
+        self.predator_achieved=[]
+        predator_pathpnt = []
         for p in path:
-            self.predator_pathpnt.append(IntList(p))
+            predator_pathpnt.append(IntList(p))
+            self.predator_pathpnt.append(p)
 
         predator_path = Waypoints()
-        predator_path.data = self.predator_pathpnt
+        predator_path.data = predator_pathpnt
         self.predator_path_pub.publish(predator_path)
 
 

@@ -205,7 +205,7 @@ class sphero_tracker:
                         self.image_pub2.publish(self.warped_predator[0],self.warped_predator[1],0)
                         self.predator_center = [self.warped_predator[0],self.warped_predator[1]]
 
-            if self.start_track == True and len(self.prey_center)>0 and len(self.predator_center)>0 and len(self.waypnts)>0:
+            if len(self.prey_center)>0 and len(self.predator_center)>0 and len(self.waypnts)>0:
                 prey_idx = closest_node(self.prey_center,self.waypnt_vals)
                 predator_idx = closest_node(self.predator_center,self.waypnt_vals)
                 self.prey_sample.append(prey_idx)
@@ -218,27 +218,29 @@ class sphero_tracker:
                     self.predator_sample = []
                     wp_prey = self.waypnt_vals[prey_idx]
                     wp_predator = self.waypnt_vals[predator_idx]
+                    self.prey_move.publish(wp_prey[0],wp_prey[1],0)
+                    self.predator_move.publish(wp_predator[0],wp_predator[1],0)
 
-                    if len(self.prey_pathpnt) == 0:
-                        self.prey_pathpnt.append(wp_prey)
-                        self.predator_pathpnt.append(wp_predator)
-                        self.prey_move.publish(wp_prey[0],wp_prey[1],0)
-                        self.predator_move.publish(wp_predator[0],wp_predator[1],0)
-                        if os.path.exists(os.path.join(self.rospack.get_path("maze_control"), "src", "observed_path.csv")):
-                            os.remove(os.path.join(self.rospack.get_path("maze_control"), "src", "observed_path.csv"))
-                        with open(os.path.join(self.rospack.get_path("maze_control"), "src", "observed_path.csv"),mode='a') as csvfile:
-                            writeCSV = csv.writer(csvfile, delimiter=',')
-                            writeCSV.writerow([self.waypnt_keys[prey_idx],self.waypnt_keys[predator_idx]])
-
-                    else:
-                        if wp_prey == self.prey_pathpnt[-1] and wp_predator == self.predator_pathpnt[-1]:
-                            pass
-                        else:
+                    if self.start_track == True:
+                        if len(self.prey_pathpnt) == 0:
                             self.prey_pathpnt.append(wp_prey)
                             self.predator_pathpnt.append(wp_predator)
+
+                            if os.path.exists(os.path.join(self.rospack.get_path("maze_control"), "src", "observed_path.csv")):
+                                os.remove(os.path.join(self.rospack.get_path("maze_control"), "src", "observed_path.csv"))
                             with open(os.path.join(self.rospack.get_path("maze_control"), "src", "observed_path.csv"),mode='a') as csvfile:
                                 writeCSV = csv.writer(csvfile, delimiter=',')
                                 writeCSV.writerow([self.waypnt_keys[prey_idx],self.waypnt_keys[predator_idx]])
+
+                        else:
+                            if wp_prey == self.prey_pathpnt[-1] and wp_predator == self.predator_pathpnt[-1]:
+                                pass
+                            else:
+                                self.prey_pathpnt.append(wp_prey)
+                                self.predator_pathpnt.append(wp_predator)
+                                with open(os.path.join(self.rospack.get_path("maze_control"), "src", "observed_path.csv"),mode='a') as csvfile:
+                                    writeCSV = csv.writer(csvfile, delimiter=',')
+                                    writeCSV.writerow([self.waypnt_keys[prey_idx],self.waypnt_keys[predator_idx]])
 
             r = 17
 
