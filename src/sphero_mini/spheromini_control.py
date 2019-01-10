@@ -91,18 +91,22 @@ class sphero_control:
             self.prey_plan = True
 
         if self.prey_start == False and len(self.prey_achieved) == len(self.prey_pathpnt):
-            self.prey_pathpnt = self.prey_path2
-            self.prey_achieved = []
             self.prey_start = True
 
-        if self.prey_start == True and self.predator_start == True and len(self.prey_pathpnt) > 0 and len(self.prey_achieved) < len(self.prey_pathpnt) and np.abs(self.prey_offset) > 0 and time.time()-self.prey_time > 0.08:
+        if self.prey_start == True and self.predator_start == True:
+            self.prey_pathpnt = self.prey_path2
+            self.prey_achieved = []
+
+        if  len(self.prey_pathpnt) > 0 and len(self.prey_achieved) < len(self.prey_pathpnt) and np.abs(self.prey_offset) > 0 and time.time()-self.prey_time > 0.08:
             self.prey_time = time.time()
             y = data.y
             x = data.x
 
             targetnum = len(self.prey_achieved)
             xt,yt = self.prey_pathpnt[targetnum]
-            self.prey_percent = self.get_precentTraj(targetnum,'prey',[xt,yt],[x,y])
+
+            if self.prey_start == True and self.predator_start == True:
+                self.prey_percent = self.get_precentTraj(targetnum,'prey',[xt,yt],[x,y])
 
             angle, distance = vector_to_target(x,yt,xt,y)
 
@@ -159,18 +163,22 @@ class sphero_control:
             self.predator_plan = True
 
         if self.predator_start == False and len(self.predator_achieved) == len(self.predator_pathpnt):
-            self.predator_pathpnt = self.predator_path2
-            self.predator_achieved = []
             self.predator_start = True
 
-        if self.predator_start == True and self.prey_start == True and len(self.predator_pathpnt) > 0 and len(self.predator_achieved) < len(self.predator_pathpnt) and np.abs(self.predator_offset) > 0 and time.time()-self.predator_time > 0.08:
+        if self.predator_start == True and self.prey_start == True:
+            self.predator_pathpnt = self.predator_path2
+            self.predator_achieved = []
+
+        if len(self.predator_pathpnt) > 0 and len(self.predator_achieved) < len(self.predator_pathpnt) and np.abs(self.predator_offset) > 0 and time.time()-self.predator_time > 0.08:
             self.predator_time = time.time()
             y = data.y
             x = data.x
 
             targetnum = len(self.predator_achieved)
             xt,yt = self.predator_pathpnt[targetnum]
-            self.predator_percent = self.get_precentTraj(targetnum,'predator',[xt,yt],[x,y])
+
+            if self.predator_start == True and self.prey_start == True:
+                self.predator_percent = self.get_precentTraj(targetnum,'predator',[xt,yt],[x,y])
 
             angle, distance = vector_to_target(x,yt,xt,y)
             outspeed = self.predator_cntrl.getPIDSpeed(distance,self.Kp,self.Ki,self.Kd,self.stopRadius,self.maxSpeed,self.minSpeed,self.resumeSpeed) - self.predator_error
