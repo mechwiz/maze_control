@@ -52,8 +52,8 @@ class sphero_tracker:
         self.list_pub = rospy.Service("waypoints_fixed",waypoint,self.waypnt_srv)
         self.image_pub = rospy.Publisher("center_point1",Point,queue_size=1)
         self.image_pub2 = rospy.Publisher("center_point2",Point,queue_size=1)
-        self.prey_move = rospy.Publisher("prey_move",Point,queue_size=1)
-        self.predator_move = rospy.Publisher("predator_move",Point,queue_size=1)
+        self.prey_move = rospy.Publisher("prey/move",Point,queue_size=1)
+        self.predator_move = rospy.Publisher("predator/move",Point,queue_size=1)
         self.prey_color_pub = rospy.Publisher("prey/set_color",ColorRGBA,queue_size=1)
         self.predator_color_pub = rospy.Publisher("predator/set_color",ColorRGBA,queue_size=1)
 
@@ -423,8 +423,8 @@ def main():
     ic = sphero_tracker()
     rospy.sleep(1)
 
-    r,g,b = rospy.get_param('prey/prey_mini_setup/color',[0,255,0])
-    ic.prey_color_pub.publish(ColorRGBA(r,g,b,1))
+    # r,g,b = rospy.get_param('prey/prey_mini_setup/color',[0,255,0])
+    # ic.prey_color_pub.publish(ColorRGBA(r,g,b,1))
     r,g,b = rospy.get_param('predator/predator_mini_setup/color',[255,0,255])
     ic.predator_color_pub.publish(ColorRGBA(r,g,b,1))
 
