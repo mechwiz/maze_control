@@ -48,6 +48,19 @@ class sphero_control:
         self.predator_speed = 0
         self.prey_offset = 0
         self.predator_offset = 0
+        self.obstacles = []
+        self.obstacle_pnts = []
+        self.calib = False
+        self.hex_dict = {}
+        self.theta = 0
+        self.prey_path2 = []
+        self.predator_path2 = []
+        self.prey_plan = False
+        self.predator_plan =False
+        self.prey_start = False
+        self.predator_start = False
+        self.waypnt_keys = []
+        self.waypnt_vals = []
         self.prey_cntrl = pidController()
         self.predator_cntrl = pidController()
         self.Kp = rospy.get_param('spheromini_control/Kp')
@@ -63,10 +76,26 @@ class sphero_control:
         self.predator_vel_pub = rospy.Publisher("predator/cmd_vel",Int16,queue_size=1)
         self.prey_heading_pub = rospy.Publisher("prey/set_heading",Int16,queue_size=1)
         self.predator_heading_pub = rospy.Publisher("predator/set_heading",Int16,queue_size=1)
-
+        self.prey_path_pub = rospy.Publisher("prey/path",Waypoints,queue_size=1)
+        self.predator_path_pub = rospy.Publisher("predator/path",Waypoints,queue_size=1)
 
     def prey_cb(self,data):
-        if len(self.prey_pathpnt) > 0 and len(self.prey_achieved) < len(self.prey_path) and np.abs(self.prey_offset) > 0 and time.time()-self.prey_time > 0.08:
+        if self.prey_plan == False:
+            pnt = [data.x,data.y]
+            pinit = self.waypnts[closest_node(pnt,self.waypnts)]
+            pgoal = self.prey_pathpnt[0]
+            pathpnt,path = self.plan_path(pinit,pgoal)
+            self.prey_path2 = np.copy(self.prey_pathpnt).tolist()
+            self.prey_pathpnt = pathpnt
+            self.prey_path_pub.publish(path)
+            self.prey_plan = True
+
+        if self.prey_start == False and len(self.prey_achieved) == len(self.prey_pathpnt):
+            self.prey_pathpnt = self.prey_path2
+            self.prey_achieved = []
+            self.prey_start = True
+
+        if self.prey_start == True and self.predator_start == True and len(self.prey_pathpnt) > 0 and len(self.prey_achieved) < len(self.prey_pathpnt) and np.abs(self.prey_offset) > 0 and time.time()-self.prey_time > 0.08:
             self.prey_time = time.time()
             y = data.y
             x = data.x
@@ -93,7 +122,7 @@ class sphero_control:
             if distance < 20:
                 self.prey_achieved.append(self.prey_pathpnt[targetnum])
                 targetnum = len(self.prey_achieved)
-                if len(self.prey_achieved) < len(self.prey_path):
+                if len(self.prey_achieved) < len(self.prey_pathpnt):
                     self.prey_distance = []
                     xt,yt = self.prey_pathpnt[targetnum]
                     angle, distance = vector_to_target(x,yt,xt,y)
@@ -119,7 +148,22 @@ class sphero_control:
                 self.predator_error = self.kp*abs(error)
 
     def predator_cb(self,data):
-        if len(self.predator_pathpnt) > 0 and len(self.predator_achieved) < len(self.predator_path) and np.abs(self.predator_offset) > 0 and time.time()-self.predator_time > 0.08:
+        if self.predator_plan == False:
+            pnt = [data.x,data.y]
+            pinit = self.waypnts[closest_node(pnt,self.waypnts)]
+            pgoal = self.predator_pathpnt[0]
+            pathpnt,path = self.plan_path(pinit,pgoal)
+            self.predator_path2 = np.copy(self.predator_pathpnt).tolist()
+            self.predator_pathpnt = pathpnt
+            self.predator_path_pub.publish(path)
+            self.predator_plan = True
+
+        if self.predator_start == False and len(self.predator_achieved) == len(self.predator_pathpnt):
+            self.predator_pathpnt = self.predator_path2
+            self.predator_achieved = []
+            self.predator_start = True
+
+        if self.predator_start == True and self.prey_start == True and len(self.predator_pathpnt) > 0 and len(self.predator_achieved) < len(self.predator_pathpnt) and np.abs(self.predator_offset) > 0 and time.time()-self.predator_time > 0.08:
             self.predator_time = time.time()
             y = data.y
             x = data.x
@@ -145,7 +189,7 @@ class sphero_control:
             if distance < 20:
                 self.predator_achieved.append(self.predator_pathpnt[targetnum])
                 targetnum = len(self.predator_achieved)
-                if len(self.predator_achieved) < len(self.predator_path):
+                if len(self.predator_achieved) < len(self.predator_pathpnt):
                     self.predator_distance = []
                     xt,yt = self.predator_pathpnt[targetnum]
                     angle, distance = vector_to_target(x,yt,xt,y)
@@ -250,6 +294,10 @@ class sphero_control:
                     alt_cnt+=1
 
         # print self.waypnt_dict
+
+        self.waypnt_keys = self.waypnt_dict.keys()
+        self.waypnt_vals = self.waypnt_dict.values()
+
         self.prey_pathpnt = []
         for i in range(len(self.prey_path)):
             self.prey_pathpnt.append(self.waypnt_dict[self.prey_path[i]])
@@ -267,6 +315,42 @@ class sphero_control:
             x2,y2 = self.predator_pathpnt[i]
             angle,distance = vector_to_target(x1,y1,x2,y2)
             self.predator_length+=distance
+
+        if len(self.obstacles) > 0:
+            for obst in self.obstacles:
+                self.obstacle_pnts.append(self.waypnt_dict[obst])
+
+        r = 17
+        if len(self.obstacles) > 0 and self.calib == False:
+            xg1,yg1 = self.waypnt_dict['M1']
+            xg2,yg2 = self.waypnt_dict['M17']
+            pnt_list = []
+            x,y = self.waypnt_dict[self.obstacles[0]]
+            for i in range(6):
+                xn = r*np.cos(2*np.pi*i/6.0) + x
+                yn = r*np.sin(2*np.pi*i/6.0) + y
+                pnt_list.append([xn,yn])
+
+            xl1,yl1 = pnt_list[0]
+            xl2,yl2 = pnt_list[3]
+
+            v0 = np.array([xg2,yg1]-np.array([xg1,yg2]))
+            v1 = np.array([xl2,yl1]-np.array([xl1,yl2]))
+
+            angle = math.degrees(np.math.atan2(np.linalg.det([v0,v1]),np.dot(v0,v1)))
+            global_angle,distance = vector_to_target(xg1,yg2,xg2,yg1)
+            angle += global_angle
+
+            self.theta = math.radians(angle)
+            self.calib = True
+
+            for obst in self.obstacles:
+                x,y = self.waypnt_dict[obst]
+                self.hex_dict[obst] = []
+                for i in range(6):
+                    xn = r*np.cos(2*np.pi*i/6.0 + self.theta) + x
+                    yn = r*np.sin(2*np.pi*i/6.0 + self.theta) + y
+                    self.hex_dict[obst].append([xn,yn])
 
     def get_precentTraj(self,num_achieved,animal,target,current):
         length_tot = 0
@@ -291,6 +375,122 @@ class sphero_control:
 
         return length_tot/total * 100.0
 
+    def plan_path(self,pinit,pgoal):
+        frontier = {}
+        nextFrontier = [[-1,-1],pinit]
+        frontier[str(nextFrontier)] = getHeuristic(pinit,pgoal)
+        E = []
+        E.append(nextFrontier)
+        checkedFrontiers = []
+
+        while len(frontier) > 0:
+            x,y = nextFrontier[1]
+            if nextFrontier[1] in checkedFrontiers:
+                pass
+            else:
+                checkedFrontiers.append(nextFrontier[1])
+            frontier.pop(str(nextFrontier))
+
+            neighbors = self.findNeighbors([x,y])
+            # print '**********'
+            # print [x,y],neighbors
+
+            for n in neighbors:
+                if n in checkedFrontiers:
+                    pass
+                else:
+                    nextFrontier = [[x,y],[n[0],n[1]]]
+                    E.append(nextFrontier)
+                    frontier[str(nextFrontier)] = getHeuristic([n[0],n[1]],pgoal) + getDistance(E,[n[0],n[1]])
+
+            fvals = frontier.values()
+            if len(fvals) == 0:
+                break
+            min_val = min(fvals)
+            nextFrontier = eval(frontier.keys()[fvals.index(min_val)])
+
+            if nextFrontier[1] == pgoal:
+                break
+
+        path = getPath(E,pgoal)
+        pathpnt = []
+        pub_pathpnt = []
+        for p in path:
+            pub_pathpnt.append(IntList(p))
+            pathpnt.append(p)
+
+        path = Waypoints()
+        path.data = pub_pathpnt
+        # self.predator_path_pub.publish(predator_path)
+
+        return pathpnt,path
+
+    def findNeighbors(self,pnt):
+        wpnts = np.copy(self.waypnt_vals).tolist()
+        wpnts.remove(pnt)
+
+        if len(self.obstacles) > 0:
+            for p in self.obstacle_pnts:
+                wpnts.remove([p[0],p[1]])
+        neighbors = []
+        close_pnt = wpnts[closest_node(pnt,wpnts)]
+        dist = getHeuristic(pnt,close_pnt)
+        d = 0
+        while d < 1.5*dist:
+            neighbors.append(close_pnt)
+            wpnts.remove(close_pnt)
+            close_pnt = wpnts[closest_node(pnt,wpnts)]
+            d = getHeuristic(pnt,close_pnt)
+
+        return neighbors
+
+def getDistance(tree,pnt):
+    xp,yp = pnt
+    check = 0
+    distance = 0
+    while check == 0:
+        for sublist in tree:
+            if sublist[1] == [xp,yp]:
+                xp,yp = sublist[0][0],sublist[0][1]
+                if sublist[0] == [-1,-1]:
+                    check = 1
+                    break
+                distance += getHeuristic([xp,yp],sublist[1])
+
+    return distance
+
+def getPath(tree,pnt):
+    xp,yp = pnt
+    check = 0
+    path = []
+    while check == 0:
+        for sublist in tree:
+            if sublist[1] == [xp,yp]:
+                path.append([xp,yp])
+                xp,yp = sublist[0][0],sublist[0][1]
+                if sublist[0] == [-1,-1]:
+                    check = 1
+                    break
+    path.reverse()
+    return path
+
+def getHeuristic(pcurrent,pgoal):
+    xc,yc = pcurrent
+    xg,yg = pgoal
+
+    deltaX = xc - xg
+    deltaY = yc - yg
+
+    distance = math.sqrt(deltaX * deltaX + deltaY * deltaY)
+
+    return distance
+
+def closest_node(node, nodes):
+    node = np.asarray(node)
+    nodes = np.asarray(nodes)
+    dist_2 = np.sum((nodes - node)**2, axis=1)
+    return np.argmin(dist_2)
+
 def vector_to_target(currentX, currentY, targetX, targetY):
     '''
         Returns distance and angle between two points (in degrees)
@@ -301,6 +501,42 @@ def vector_to_target(currentX, currentY, targetX, targetY):
     distance = math.sqrt(deltaX * deltaX + deltaY * deltaY)
 
     return angle, distance
+
+def points (p0, p1):
+    x0, y0 = p0
+    x1, y1 = p1
+
+    dx = abs(x1-x0)
+    dy = abs(y1-y0)
+    if x0 < x1:
+        sx = 1
+    else:
+        sx = -1
+
+
+    if y0 < y1:
+        sy = 1
+    else:
+        sy = -1
+    err = dx-dy
+
+    point_list = []
+    while True:
+        point_list.append((x0, y0))
+        if x0 == x1 and y0 == y1:
+            break
+
+        e2 = 2*err
+        if e2 > -dy:
+            # overshot in the y direction
+            err = err - dy
+            x0 = x0 + sx
+        if e2 < dx:
+            # overshot in the x direction
+            err = err + dx
+            y0 = y0 + sy
+
+    return point_list
 
 def main():
     getOffset = rospy.ServiceProxy("prey/offset",offset)
@@ -338,6 +574,15 @@ def main():
         for row in readCSV:
             ic.prey_path.append(row[0])
             ic.predator_path.append(row[1])
+
+    with open(os.path.join(rospack.get_path("maze_control"), "src", "obstacles.csv")) as csvfile:
+        readCSV = csv.reader(csvfile, delimiter=',')
+        for row in readCSV:
+            if len(row) == 0:
+                break
+            else:
+                ic.obstacles.append(row[0])
+
     ic.prey_offset = prey_offset.offset.data
     ic.predator_offset = predator_offset.offset.data
     ic.waypntcb(waypoint_list)

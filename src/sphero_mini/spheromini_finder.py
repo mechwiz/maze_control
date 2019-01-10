@@ -4,6 +4,7 @@ import os, rospkg
 import cv2
 import numpy as np
 import csv
+import math
 
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
@@ -27,6 +28,12 @@ class sphero_finder:
         self.warpedpic = None
         self.warped_prey = []
         self.warped_predator = []
+        self.obstacles = []
+        self.theta = 0
+        self.calib = False
+        self.hex_dict = {}
+        self.prey_plan = []
+        self.predator_plan = []
         self.bridge = CvBridge()
         self.lower_green = np.array(rospy.get_param('spheromini_finder/lower_prey'))
         self.upper_green = np.array(rospy.get_param('spheromini_finder/upper_prey'))
@@ -35,11 +42,23 @@ class sphero_finder:
         self.image_sub = rospy.Subscriber("/combined_image",Image,self.imagecb)
         self.image_sub2 = rospy.Subscriber("/warped_image",Image,self.warpedcb)
         self.waypnts_sub = rospy.Subscriber("/waypoints",Waypoints,self.waypntcb)
+        self.prey_path_sub = rospy.Subscriber("/predator/path",Waypoints,self.preypathcb)
+        self.predator_path_sub = rospy.Subscriber("/predator/path",Waypoints,self.predatorpathcb)
         self.list_pub = rospy.Service("waypoints_fixed",waypoint,self.waypnt_srv)
         self.image_pub = rospy.Publisher("center_point1",Point,queue_size=1)
         self.image_pub2 = rospy.Publisher("center_point2",Point,queue_size=1)
         self.prey_color_pub = rospy.Publisher("prey/set_color",ColorRGBA,queue_size=1)
         self.predator_color_pub = rospy.Publisher("predator/set_color",ColorRGBA,queue_size=1)
+
+    def preypathcb(self,data):
+        self.prey_plan = []
+        for i in range(len(data.data)):
+            self.prey_plan.append(data.data[i].data)
+
+    def predatorpathcb(self,data):
+        self.predator_plan = []
+        for i in range(len(data.data)):
+            self.predator_plan.append(data.data[i].data)
 
     def waypnt_srv(self,req):
         if len(self.waypnts)>0:
@@ -180,6 +199,39 @@ class sphero_finder:
                         img_original = cv2.circle(img_original,(self.warped_predator[0],self.warped_predator[1]),5,(255,0,0),2)
                         self.image_pub2.publish(self.warped_predator[0],self.warped_predator[1],0)
 
+            r = 17
+
+            if len(self.waypnts) > 0 and len(self.obstacles) > 0 and self.calib == False:
+                xg1,yg1 = self.waypnt_dict['M1']
+                xg2,yg2 = self.waypnt_dict['M17']
+                pnt_list = []
+                x,y = self.waypnt_dict[self.obstacles[0]]
+                for i in range(6):
+                    xn = r*np.cos(2*np.pi*i/6.0) + x
+                    yn = r*np.sin(2*np.pi*i/6.0) + y
+                    pnt_list.append([xn,yn])
+
+                xl1,yl1 = pnt_list[0]
+                xl2,yl2 = pnt_list[3]
+
+                v0 = np.array([xg2,yg1]-np.array([xg1,yg2]))
+                v1 = np.array([xl2,yl1]-np.array([xl1,yl2]))
+
+                angle = math.degrees(np.math.atan2(np.linalg.det([v0,v1]),np.dot(v0,v1)))
+                global_angle,distance = vector_to_target(xg1,yg2,xg2,yg1)
+                angle += global_angle
+
+                self.theta = math.radians(angle)
+                self.calib = True
+
+                for obst in self.obstacles:
+                    x,y = self.waypnt_dict[obst]
+                    self.hex_dict[obst] = []
+                    for i in range(6):
+                        xn = r*np.cos(2*np.pi*i/6.0 + self.theta) + x
+                        yn = r*np.sin(2*np.pi*i/6.0 + self.theta) + y
+                        self.hex_dict[obst].append([xn,yn])
+
             if len(self.waypnts) > 0:
                 for wp in self.waypnts:
                     cv2.circle(img_original,(wp[0],wp[1]),5,(0,0,255),-1)
@@ -195,6 +247,16 @@ class sphero_finder:
 
             if len(self.predator_pathpnt) > 0:
                 cv2.polylines(img_original,[self.predator_pathpnt],False,(0,255,255),2)
+
+            if len(self.prey_plan) > 0:
+                cv2.polylines(img_original,[np.array(self.prey_plan,np.int32)],False,(0,0,255),2)
+
+            if len(self.predator_plan) > 0:
+                cv2.polylines(img_original,[np.array(self.predator_plan,np.int32)],False,(255,0,0),2)
+
+            if len(self.obstacles) > 0:
+                for key in self.hex_dict:
+                    cv2.polylines(img_original,[np.array(self.hex_dict[key],np.int32)],True,(255,0,0),2)
 
             cv2.imshow("Converted Image2",img_original)
             if self.warpedpic is not None:
@@ -304,6 +366,17 @@ class sphero_finder:
 def nothing(x):
     pass
 
+def vector_to_target(currentX, currentY, targetX, targetY):
+    '''
+        Returns distance and angle between two points (in degrees)
+    '''
+    deltaX = targetX - currentX
+    deltaY = targetY - currentY
+    angle = math.degrees(math.atan2(deltaY, deltaX))
+    distance = math.sqrt(deltaX * deltaX + deltaY * deltaY)
+
+    return angle, distance
+
 def main():
     rospy.init_node('sphero_finder', anonymous=False)
     ic = sphero_finder()
@@ -319,6 +392,14 @@ def main():
         for row in readCSV:
             ic.prey_path.append(row[0])
             ic.predator_path.append(row[1])
+
+    with open(os.path.join(rospack.get_path("maze_control"), "src", "obstacles.csv")) as csvfile:
+        readCSV = csv.reader(csvfile, delimiter=',')
+        for row in readCSV:
+            if len(row) == 0:
+                break
+            else:
+                ic.obstacles.append(row[0])
 
     try:
         rospy.spin()
