@@ -59,6 +59,8 @@ class sphero_control:
         self.predator_plan =False
         self.prey_start = False
         self.predator_start = False
+        self.prey_finish = False
+        self.predator_finish = False
         self.waypnt_keys = []
         self.waypnt_vals = []
         self.prey_cntrl = pidController()
@@ -80,22 +82,27 @@ class sphero_control:
         self.predator_path_pub = rospy.Publisher("predator/path",Waypoints,queue_size=1)
 
     def prey_cb(self,data):
-        if self.prey_plan == False:
+        if self.prey_plan == False and len(self.waypnts)>0:
             pnt = [data.x,data.y]
             pinit = self.waypnts[closest_node(pnt,self.waypnts)]
             pgoal = self.prey_pathpnt[0]
-            pathpnt,path = self.plan_path(pinit,pgoal)
-            self.prey_path2 = np.copy(self.prey_pathpnt).tolist()
-            self.prey_pathpnt = pathpnt
-            self.prey_path_pub.publish(path)
+            if pinit == pgoal:
+                self.prey_path2 = np.copy(self.prey_pathpnt).tolist()
+                self.prey_pathpnt = []
+            else:
+                pathpnt,path = self.plan_path([pinit[0],pinit[1]],[pgoal[0],pgoal[1]])
+                self.prey_path2 = np.copy(self.prey_pathpnt).tolist()
+                self.prey_pathpnt = pathpnt
+                self.prey_path_pub.publish(path)
             self.prey_plan = True
 
-        if self.prey_start == False and len(self.prey_achieved) == len(self.prey_pathpnt):
+        if len(self.waypnts)>0 and self.prey_start == False and len(self.prey_achieved) == len(self.prey_pathpnt):
             self.prey_start = True
 
-        if self.prey_start == True and self.predator_start == True:
+        if self.prey_start == True and self.predator_start == True and self.prey_finish == False:
             self.prey_pathpnt = self.prey_path2
             self.prey_achieved = []
+            self.prey_finish = True
 
         if  len(self.prey_pathpnt) > 0 and len(self.prey_achieved) < len(self.prey_pathpnt) and np.abs(self.prey_offset) > 0 and time.time()-self.prey_time > 0.08:
             self.prey_time = time.time()
@@ -152,22 +159,27 @@ class sphero_control:
                 self.predator_error = self.kp*abs(error)
 
     def predator_cb(self,data):
-        if self.predator_plan == False:
+        if self.predator_plan == False and len(self.waypnts)>0:
             pnt = [data.x,data.y]
             pinit = self.waypnts[closest_node(pnt,self.waypnts)]
             pgoal = self.predator_pathpnt[0]
-            pathpnt,path = self.plan_path(pinit,pgoal)
-            self.predator_path2 = np.copy(self.predator_pathpnt).tolist()
-            self.predator_pathpnt = pathpnt
-            self.predator_path_pub.publish(path)
+            if pinit == pgoal:
+                self.predator_path2 = np.copy(self.predator_pathpnt).tolist()
+                self.predator_pathpnt = []
+            else:
+                pathpnt,path = self.plan_path([pinit[0],pinit[1]],[pgoal[0],pgoal[1]])
+                self.predator_path2 = np.copy(self.predator_pathpnt).tolist()
+                self.predator_pathpnt = pathpnt
+                self.predator_path_pub.publish(path)
             self.predator_plan = True
 
-        if self.predator_start == False and len(self.predator_achieved) == len(self.predator_pathpnt):
+        if len(self.waypnts)>0 and self.predator_start == False and len(self.predator_achieved) == len(self.predator_pathpnt):
             self.predator_start = True
 
-        if self.predator_start == True and self.prey_start == True:
+        if self.predator_start == True and self.prey_start == True and self.predator_finish == False:
             self.predator_pathpnt = self.predator_path2
             self.predator_achieved = []
+            self.predator_finish = True
 
         if len(self.predator_pathpnt) > 0 and len(self.predator_achieved) < len(self.predator_pathpnt) and np.abs(self.predator_offset) > 0 and time.time()-self.predator_time > 0.08:
             self.predator_time = time.time()
