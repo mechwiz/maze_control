@@ -42,7 +42,7 @@ class sphero_finder:
         self.image_sub = rospy.Subscriber("/combined_image",Image,self.imagecb)
         self.image_sub2 = rospy.Subscriber("/warped_image",Image,self.warpedcb)
         self.waypnts_sub = rospy.Subscriber("/waypoints",Waypoints,self.waypntcb)
-        self.prey_path_sub = rospy.Subscriber("/predator/path",Waypoints,self.preypathcb)
+        self.prey_path_sub = rospy.Subscriber("/prey/path",Waypoints,self.preypathcb)
         self.predator_path_sub = rospy.Subscriber("/predator/path",Waypoints,self.predatorpathcb)
         self.list_pub = rospy.Service("waypoints_fixed",waypoint,self.waypnt_srv)
         self.image_pub = rospy.Publisher("center_point1",Point,queue_size=1)
