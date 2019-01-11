@@ -87,25 +87,28 @@ class predator_chase:
             pass
         else:
             if len(self.predator_center) > 0:
-                if len(self.hex_dict) > 0:
-                    pnt_list = points(self.predator_center,pnt)
+                if self.prey_actual == self.predator_center:
+                    self.prey_caught = True
+                else:
+                    if len(self.hex_dict) > 0:
+                        pnt_list = points(self.predator_center,pnt)
 
-                    check = False
-                    for p in pnt_list:
-                        for obst in self.obstacles:
-                            # print cv2.pointPolygonTest(np.array(self.hex_dict[obst],np.int32),(p[0],p[1]),False)
-                            if cv2.pointPolygonTest(np.array(self.hex_dict[obst],np.int32),(p[0],p[1]),False)>0:
-                                check = True
+                        check = False
+                        for p in pnt_list:
+                            for obst in self.obstacles:
+                                # print cv2.pointPolygonTest(np.array(self.hex_dict[obst],np.int32),(p[0],p[1]),False)
+                                if cv2.pointPolygonTest(np.array(self.hex_dict[obst],np.int32),(p[0],p[1]),False)>0:
+                                    check = True
+                                    break
+                            if check == True:
                                 break
-                        if check == True:
-                            break
 
-                    if check == False:
+                        if check == False:
+                            self.prey_center = pnt
+                            self.plan_path(self.predator_center,self.prey_center)
+                    else:
                         self.prey_center = pnt
                         self.plan_path(self.predator_center,self.prey_center)
-                else:
-                    self.prey_center = pnt
-                    self.plan_path(self.predator_center,self.prey_center)
 
         if len(self.predator_center)>0 and self.prey_center == self.predator_center and self.prey_center == self.prey_actual:
             self.prey_caught = True
@@ -122,13 +125,13 @@ class predator_chase:
             self.prey_caught = True
 
     def prey_cb(self,data):
-        if len(self.prey_center)==0:
+        if len(self.prey_center)==0 and len(self.waypnts)>0:
             pnt = [data.x,data.y]
             pnt = self.waypnts[closest_node(pnt,self.waypnts)]
             self.preymove_cb(Point(pnt[0],pnt[1],0))
 
     def predator_cb(self,data):
-        if len(self.predator_center)==0:
+        if len(self.predator_center)==0 and len(self.waypnts)>0:
             pnt = [data.x,data.y]
             pnt = self.waypnts[closest_node(pnt,self.waypnts)]
             self.predatormove_cb(Point(pnt[0],pnt[1],0))
