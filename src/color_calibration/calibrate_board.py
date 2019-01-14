@@ -100,8 +100,8 @@ class image_overlay:
                 hull = cv2.convexHull(cnts,clockwise=True)
                 approx = cv2.approxPolyDP(hull,peri,True)
                 if len(approx)==8:
-                    cv2.drawContours(img_original, [hull], -1, (0, 255, 0), 3)
-                    res = cv2.drawContours(res, [hull], -1, (0, 255, 0), 3)
+                    cv2.drawContours(img_original, [approx], -1, (0, 255, 0), 3)
+                    cv2.drawContours(res, [approx], -1, (0, 255, 0), 3)
 
                     self.polypnts1x.append(approx[0][0][0])
                     self.polypnts1y.append(approx[0][0][1])
