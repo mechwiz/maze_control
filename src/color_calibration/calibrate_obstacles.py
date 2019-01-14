@@ -85,17 +85,20 @@ class sphero_tracker:
                             # M = cv2.moments(c)
 
                             if radius > 5:
+                                cv2.drawContours(img_original,[c],0,(0,255,0),2)
+                                cv2.drawContours(res,[c],0,(0,255,0),2)
                                 # center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
-                                res = cv2.circle(res,(int(x),int(y)),int(radius),(0,255,0),2)
-                                img_original = cv2.circle(img_original,(int(x),int(y)),int(radius),(0,255,0),2)
+                                # res = cv2.circle(res,(int(x),int(y)),int(radius),(0,255,0),2)
 
-                                close_idx = closest_node([int(x),int(y)],self.waypnt_vals)
-                                k = self.waypnt_keys[close_idx]
-                                if k in self.obstacle_dict.keys():
-                                    self.obstacle_dict[k] += 1
-                                else:
-                                    self.obstacle_dict[k] = 1
+                                for i in range(len(self.waypnt_vals)):
+                                    wp = self.waypnt_vals[i]
+                                    if cv2.pointPolygonTest(c,(int(wp[0]),int(wp[1])),False)>0:
+                                        k = self.waypnt_keys[i]
+                                        if k in self.obstacle_dict.keys():
+                                            self.obstacle_dict[k] += 1
+                                        else:
+                                            self.obstacle_dict[k] = 1
 
             if 100 in self.obstacle_dict.values():
                 self.obstacle_list = []
