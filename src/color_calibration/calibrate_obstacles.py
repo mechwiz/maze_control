@@ -27,6 +27,7 @@ class sphero_tracker:
         self.outline = []
         self.obstacle_list = []
         self.obstacle_dict = {}
+        self.cell_order = []
         self.hex_dict = {}
         self.calib = False
         self.theta = 0
@@ -170,10 +171,11 @@ class sphero_tracker:
                 if os.path.exists(os.path.join(self.rospack.get_path("maze_control"), "src", "obstacles.csv")):
                         os.remove(os.path.join(self.rospack.get_path("maze_control"), "src", "obstacles.csv"))
 
-                for obst in self.obstacle_list:
-                    with open(os.path.join(self.rospack.get_path("maze_control"), "src", "obstacles.csv"),mode='a') as csvfile:
-                        writeCSV = csv.writer(csvfile, delimiter=',')
-                        writeCSV.writerow([obst])
+                for obst in self.cell_order:
+                    if obst in self.obstacle_list:
+                        with open(os.path.join(self.rospack.get_path("maze_control"), "src", "obstacles.csv"),mode='a') as csvfile:
+                            writeCSV = csv.writer(csvfile, delimiter=',')
+                            writeCSV.writerow([obst])
 
 
         except CvBridgeError, e:
@@ -195,6 +197,7 @@ class sphero_tracker:
         cnt = 0
         change = False
         alt_cnt = 0
+        self.cell_order = []
         for i in range(25):
             if i == 0:
                 name = 'A'
@@ -249,6 +252,7 @@ class sphero_tracker:
 
             for j in range(1,lvl):
                 cell = name + str(j)
+                self.cell_order.append(cell)
                 self.waypnt_dict[cell] = alist[cnt]
                 # print cnt
                 cnt+=1
