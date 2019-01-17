@@ -35,6 +35,11 @@ sudo pip install imutils
 sudo pip install --upgrade imutils
 ```
 
+- The ROS camera driver for running the cameras. Run the the bash script below to achieve this.
+```
+sudo apt-get install ros-kinetic-usb-cam
+```
+
 Now run the following bash script in your favorite directory which will create a workspace called `sphero_ws` and clone this repo into it.
 ```bash
 mkdir -p sphero_ws/src; cd sphero_ws/src; catkin_init_workspace
@@ -73,6 +78,8 @@ There are several steps and sidesteps to implementing this package which is disc
 1. Plug in the usb cable from camera 1 (signified by a sticker on the cable) into your computer first, and the second cable afterwards. This must be done in this order because the package assumes camera 1 to be the _left_ image and camera 2 to be the _right_ image that will stitched together.
 
 2. Next comes the image stitching node which will calculate the homography matrix from one camera frame into the other. For the current camera configuration in the lab, there is a default homography matrix that has already been calcuated and is stored in a parameter file [here](param/combine_images.yaml). This makes for faster setup and does not require taking off the vinyl mat on the maze floor. To run this node, simply launch the cameras and image stitching node together by running: `roslaunch maze_control start_cam_stitch.launch`. An image feed will appear of the resulting stitched image.
+
+Note that if an error appears about not being able to find the camera usb-port file (especially for `/dev/video2`), this could be because the package assumes there is a webcam already attached/built-in to the computer at `/dev/video0`. If this is the case, then simply modify the [camera launch file](launch/usb_2cams.launch) by replacing `video1` to `video0` on line 3 and `video2` to `video1` on line 11.
 
 If you want to recalculate the homography matrix, then you probably will have to remove the vinyl mat from the maze floor. This is because the glare from the lights on the mat seems to interfere with succesfull image-stitching results. Before running anything, you will need to modify the default homography param [file](param/combine_images.yaml) by commenting out the first line and uncommenting the second line. Then start the cameras by running: `roslaunch maze_control usb_2cams.launch`. In a separate terminal, run: `roslaunch maze_control stitch_images.launch`. After doing this, the following images will appear (assuming the homography matrix has not been previously calculated).
 
@@ -138,7 +145,21 @@ Y1,Y2,Y3,...,Y9
 The points are then published so that other nodes can use them for sphero calibration and control.
 
 <ol start="4">
-<li>Before you can launch the <b>sphero_finder</b> node, you need to first connect to the spheros. You can do this by running the following 2 commands <b>separately</b> - each one in a separate terminal. Wait for one to finish before starting the next one. Also make sure your bluetooth is turned on. You do not need to "turn on" the spheros for this procedure. They have smart BTLE so they are always listening.</li>
+<li>If there are obstacles in the maze, launch the obstacle detection node by running the following command below. Otherwise make sure to delete all the cells in the [obstacles.csv file](src/obstacles.csv).</li></ol>
+
+```
+roslaunch maze_control detect_obstacles.launch
+```
+Assuming your color calibration is good for detecting the color of the obstacles, you will see the following progression of images from left to right. If the calibration is off, please look [here](launch/color_calibration/README.md) for the appropiate calibration procedure.
+
+|Waiting for map calibration... | Detection of Obstacles|
+|:--------------:|:-------------:|
+|<img src="imgs/obstacles1.png" width="500px" alt="" /> | <img src="imgs/obstacles2.png" width="500px" alt="" /> |
+
+First, an image feed of just the stitched image should appear like the one on the left above. Before the node can find the obstacles, it must know the layout of the maze contour so that it knows what area to look within and what to ignore. Since we already know this from the last step, all that needs to be done is to let the **maze_setup** node know when to send over this information. To do this, click on the image feed from the **maze_setup** node and hit the "**c**" key when you see a good feed (like the one shown in the last step). Once you do this, you will see a snapshot of the current waypoint configuration of the maze along with the bounded maze contour show up on the image feed from the **detect_obstacles** node. If you still don't like the configuration, you may click the image feed from the **maze_setup** node and hit the "**c**" key again until you are satisfied. You will also notice that blue hexagons will appear around those waypoints on the image feed from the **detect_obstacles** node from where the program detects the obstacles as shown above on the right. The hexagons are centered around the waypoints and not the top of the obstacles because the obstacle tops may be offset from where they truly are due to the angle at which the camera sees them. If the size of the hexagons seem too big or small for the hexagons they represent, you can modify its radius by raising or lowering the number of pixels of the radius parameter in this [file](param/obstaclecolor_calib.yaml). To capture the list of detected obstacles, click on the image feed from the **detect_obstacles** node and hit the "**c**" key. An ordered list of the obstacle cells will be outputted into the [obstacles.csv file](src/obstacles.csv) according to the cell scheme described above. You may do this as many times as you like until you are satisfied. Note that it is important to check this list for either missing obstacles or for extra obstacles since this program is not 100% fool proof. Once you finish this process, you may terminate the **detect_obstacles** node by typing "Cntrl+c" into the terminal running that launch file in order to free up some processing power on your machine.
+
+<ol start="5">
+<li>Before you can launch the node for tracking the spheros, you need to first connect to the spheros. You can do this by running the following 2 commands <b>separately</b> - each one in a separate terminal. Wait for one to finish before starting the next one. Also make sure your bluetooth is turned on. You do not need to "turn on" the spheros for this procedure. They have smart BTLE so they are always listening. Note that if you would like the predator to chase a sphero that you want to control manually, then only run the launch file to connect to the predator sphero. You can connect to the prey sphero by installing the [Sphero Play](https://itunes.apple.com/us/app/sphero-play/id1280682522?mt=8) App.</li>
 </ol>
 
 ```
@@ -149,26 +170,38 @@ The terminal will send a message when each sphero has been connected to succesfu
 
 If you would like to connect to a different sphero mini or change the sphero color for tracking purposes, you can change the bluetooth address and color RGB values for the prey and predator yaml files [here](param). You will need to run color calibration, though, if you change the sphero color. Ideally, you should pick a color that will be easy to segment from the other colors being detected. The default colors now work great in the lab.
 
-<ol start="5">
-<li>Launch the sphero finder node by running:</li></ol>
+<ol start="6">
+<li>There are now 2 choices. If you would like to run the setup for having the prey and predator spheros follow their respective paths then launch the **sphero_finder** node. If you would like to run the setup for having the predator sphero chase a human controlled sphero then launch the **sphero_tracker** node. These setups can be run as follows:</li></ol>
 
+**sphero_finder** node
 ```
 roslaunch maze_control spheromini_finder.launch
 ```
+
+**sphero_tracker** node
+```
+roslaunch maze_control spheromini_tracker.launch
+```
+
 Assuming your color calibration is good for detecting the color of each sphero, you will see the following progression of images from left to right. If the calibration is off, please look [here](launch/color_calibration/README.md) for the appropiate calibration procedure.
+Note, that if you are manually controlling the prey sphero with the App, you will need to change its color to match the color that the **sphero_tracker** node is looking for. The current default color is green. If you would like to use a real mouse as the prey (instead of you controlling a prey sphero), then you will need to calibrate the prey color for the mouse color (or you can color the mouse).
 
 |Waiting for map calibration... | Detection of Prey and Predator Spheros|
 |:--------------:|:-------------:|
 |<img src="imgs/sphero_finder1.png" width="500px" alt="" /> | <img src="imgs/sphero_finder2.png" width="500px" alt="" /> |
 
-First, an image feed of just the stitched image should appear like the one on the left above. Before the node can find the spheros, it must know the layout of the maze contour so that it knows what area to look within and what to ignore. Since we already know this from the last step, all that needs to be done is to let the **maze_setup** node know when to send over this information. To do this, click on the image feed from the **maze_setup** node and hit the "**c**" key when you see a good feed (like the one shown in the last step). Once you do this, you will see a snapshot of the current waypoint configuration of the maze along with the bounded maze contour show up on the image feed from the **sphero_finder** node. If you still don't like the configuration, you may click the image feed from the **maze_setup** node and hit the "**c**" key again until you are satisfied. Once you finish this process, you may terminate the **maze_setup** node by typing "Cntrl+c" into the terminal running that launch file in order to free up some processing power on your machine. The waypoint informaion is available via a custom service for other relevant nodes (such as the sphero calibration or control nodes) to access on startup. 
+The following procedure is applicable for both the **sphero_finder** and **sphero_tracker** nodes so whenever it says **sphero_finder** in the following paragraph, it can be interchanged with **sphero_tracker**.
+
+As with the obstacle detection procedure, an image feed of just the stitched image should appear like the one on the left above. Before the node can find the spheros, it must know the layout of the maze contour so that it knows what area to look within and what to ignore. Since we already know this from the maze setup procedure, all that needs to be done is to let the **maze_setup** node know when to send over this information. To do this, click on the image feed from the **maze_setup** node and hit the "**c**" key when you see a good feed (like the one shown in the last step). Once you do this, you will see a snapshot of the current waypoint configuration of the maze along with the bounded maze contour show up on the image feed from the **sphero_finder** node. If you still don't like the configuration, you may click the image feed from the **maze_setup** node and hit the "**c**" key again until you are satisfied. Once you finish this process, you may terminate the **maze_setup** node by typing "Cntrl+c" into the terminal running that launch file in order to free up some processing power on your machine. The waypoint informaion is available via a custom service for other relevant nodes (such as the sphero calibration or control nodes) to access on startup.
 
 Once you set the configuraton on the image feed from your **sphero_finder** node, you should see a green circle around the prey sphero and a blue circle around the predator sphero. Currently, the node identifies the prey and predator spheros by their green and purple colors respectively. If you do not see one or both of these circles, then you need to calibrate the color segmentation parameters for detecting them [here](launch/color_calibration/README.md) as mentioned above.
 
-You will also see the paths for each of the spheros to follow. The blue path signifies the path of the prey, and the yellow path signifies the path of the predator. These paths are defined in [path.csv](src/path.csv). The paths are defined by a sequence of the cell names that each sphero will be following.
+If you ran the **sphero_finder** node, you will also see the paths for each of the spheros to follow. The blue path signifies the path of the prey, and the yellow path signifies the path of the predator. These paths are defined in [path.csv](src/path.csv). The paths are defined by a sequence of the cell names that each sphero will be following.
 
-<ol start="6">
-<li>Next, you will need to calibrate the spheros so that their relative frames are transformed into the global frame of the maze and into the camera frame. You can do this by placing each sphero in a relatively open area within the maze and running the following 2 commands <b>separately</b> - each one in a separate terminal. Wait for the calibration of the prey sphero to finish before running the predator calibration. Each calibration will take less than 5 seconds.</li>
+If you ran the **sphero_tracker** node, wait until you are ready to start tracking the prey and predator paths after running the **predator_chase** node below. Then click on the image feed from the **sphero_tracker** node, hit the "**c**" key, and the paths will start to be tracked. For feedback purposes, the prey and predator paths will be displayed in blue and yellow respectively on the image feed of the **sphero_tracker** node.
+
+<ol start="7">
+<li>Next, you will need to calibrate the spheros so that their relative frames are transformed into the global frame of the maze and into the camera frame. You can do this by placing each sphero in a relatively open area within the maze and running the following 2 commands <b>separately</b> - each one in a separate terminal. Wait for the calibration of the prey sphero to finish before running the predator calibration. Each calibration will take less than 5 seconds. If you are controlling the prey sphero through the App, then you should calibrate it using the App according to whatever reference frame you like. Typically, the blue calibration dot on the sphero should be facing you for best performance.</li>
 </ol>
 
 ```
@@ -177,13 +210,20 @@ roslaunch maze_control calibrate_predator.launch
 ```
 The calibration works as follows. The global frame is considered to have its positive x-axis along the vector from cell "**M1**" to cell "**M17**" which is the middle most row of cells of the octagon stretching along its width. Once the calibration starts, the sphero will move for 1 second on its positive x-axis. The node will then find the offset angle between the vector defined by the start and end position of the robot's trajectory and the vector defining the global frame. It will then find the angle offset between the global frame and the camera frame and add that to the total angle offset representing the angle between the robot's x-axis and the camera's x-axis. This offset is then sent out using a custom service to be available for the **sphero_control** node.
 
-<ol start="7">
-<li>The sphero control node can be started by running:</li></ol>
+<ol start="8">
+<li>If you are running the setup for having the prey and predator spheros follow their respective paths then launch the **sphero_control** node. Otherwise, if you are running the setup for having the predator sphero chase one you are controlling, then launch the **predator_chase** node. These nodes can be launched as follows:</li></ol>
 
+**sphero_control** node
 ```
-roslaunch maze_control spheromomini_control
+roslaunch maze_control spheromomini_control.launch
 ```
-in a terminal. This node is responsible for controlling each sphero such that they each follow their respective paths and do so in a way where one is not too many steps ahead of the other one on its path than the other one is on its path. Each sphero is controlled using PID control using an adapted [PID control library](https://github.com/hydrosquall/SpheroTeam/blob/master/SpheroTeam/pidController.py) meant for sphero control which was originally inspired by a [PID control function](https://www.mathworks.com/matlabcentral/fileexchange/52481-sphero-connectivity-package) found in a Sphero control library in Matlab's File Exchange.
+
+**predator_chase** node
+```
+roslaunch maze_control predator_chase.launch
+```
+
+The **sphero_control** node is responsible for controlling each sphero such that they each follow their respective paths and do so in a way where one is not too many steps ahead of the other one on its path than the other one is on its path. Each sphero is controlled using PID control using an adapted [PID control library](https://github.com/hydrosquall/SpheroTeam/blob/master/SpheroTeam/pidController.py) meant for sphero control which was originally inspired by a [PID control function](https://www.mathworks.com/matlabcentral/fileexchange/52481-sphero-connectivity-package) found in a Sphero control library in Matlab's File Exchange.
 
 The gains and parameters for the controls can be modified [here](param/sphero_control.yaml) if you would like to tweak them. The parameter descriptions are as follows:
 - Kp: Proportional controller gain
@@ -193,6 +233,10 @@ The gains and parameters for the controls can be modified [here](param/sphero_co
 - distance: Distance in pixels between robot and desired point
 - resumeSpeed: If robot stops, this speed overcomes inertia
 - kp_track: Proportional controller gain for decreasing speed of sphero pulling ahead of the other on its path as comparted to the other one on its path
+
+Note, that each sphero will automatically navigate themselves around obstacles to the starting point on their paths using a custom-made A* path-planning algorithm. If one gets to its starting point first, it will wait until the other one has gotten to its starting point before proceeding down its path.
+
+The **predator_chase** node is responsbile for controlling the predator sphero to chase the sphero that you are controlling through the App. It does this by using a custom-made A* path-planning algorithm. Note, that the path-planning algorithm has been modified such that the predator cannot see through obstacles. It will only move to the last known location that it saw the prey. So, you as the prey can use the obstacles around you to hide from the predator.
 
 ## Demo & Future Improvements
 #### Video
@@ -210,9 +254,13 @@ Here is a short video of the sphero control working in the full-scale maze.
   <img src="imgs/full_scale_demo_real.gif" width="400" />
 </p>
 
+Here is a short video of the predator_chase working in the full-scale maze.
+
+<p float="middle">
+  <img src="imgs/full_scale_chase_demo.gif" width="400" />
+  <img src="imgs/full_scale_chase_demo_real.gif" width="400" />
+</p>
+
 #### Future Improvments
-- There will be a clear Vinyl mat put on the maze to make any discontinuties on the surface caused by wood warping to become one continous surface that the spheros will have no trouble rolling on.
 - Adding more cameras for when the obstacle height becomes taller (when mice will be put into the maze) due to FOV obstruction
-- Adding in capability to track the path a mouse moves within the maze when chased by a sphero
-- Adding in Real-Time planning capability based on any scenarios modeled within the maze
-- Adding in obstacle detection for when real-time planning is actually feasible. Currently it takes days to calculate pre-planned paths for one scenario.
+- Adding in Real-Time path planning capability for how the prey and predator should move based on researched models for any scenario modeled within the maze. (Note, currently it takes days for these models to be computed for just one scenario)
