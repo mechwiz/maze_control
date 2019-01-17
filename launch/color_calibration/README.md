@@ -17,7 +17,7 @@ Move the sliders around until you are satisfied with the resulting boundaries as
 
 ![boardcolor](../../imgs/boardcolor.png)
 
-Record the HSV upper and lower boundaries and enter them into the lower and upper birch parameters in the corresponding yaml file [here](../../param/mazecolor_calib.yaml)
+Record the HSV upper and lower boundaries and enter them into the lower and upper birch parameters in the corresponding yaml file [here](../../param/mazecolor_calib.yaml).
 
 #### Red Tape Color Calibration
 In order to find good HSV boundaries for color segmentation for obtaining the red tape markers on the maze, run the following:
@@ -30,7 +30,20 @@ Move the sliders around until you are satisfied with the resulting boundaries as
 
 ![redtape](../../imgs/redtape.png)
 
-Record the HSV upper and lower boundaries and enter them into the lower and upper redtape parameters in the corresponding yaml file [here](../../param/mazecolor_calib.yaml)
+Record the HSV upper and lower boundaries and enter them into the lower and upper redtape parameters in the corresponding yaml file [here](../../param/mazecolor_calib.yaml).
+
+#### Obstacle Color Calibration
+In order to find good HSV boundaries for color segmentation for finding the obstacle locations, run the following:
+
+```
+roslaunch maze_control obstaclecolor_calibration.launch
+```
+
+Move the sliders around until you are satisfied with the resulting boundaries as shown below. If you would like to have the program show the contours around the obstacles and draw hexagons around each identified obstacle for feedback purposes, make sure to hit the "**c**" key after clicking on the **maze_node** image feed. Then, you can also move the radius slider around to determine how big the size of the overlayed blue hexagons should be.
+
+![obstaclecolor](../../imgs/obstaclecolor.png)
+
+Record the radius and the HSV upper and lower boundaries and enter them into the radius and lower and upper obstacle parameters in the corresponding yaml file [here](../../param/obstaclecolor_calib.yaml).
 
 #### Prey Color Calibration
 In order to find good HSV boundaries for color segmentation for finding the prey sphero, run the following:
@@ -43,7 +56,7 @@ Move the sliders around until you are satisfied with the resulting boundaries as
 
 ![preycolor](../../imgs/preycolor.png)
 
-Record the HSV upper and lower boundaries and enter them into the lower and upper prey color parameters in the corresponding yaml file [here](../../param/spherocolor_calib.yaml)
+Record the HSV upper and lower boundaries and enter them into the lower and upper prey color parameters in the corresponding yaml file [here](../../param/spherocolor_calib.yaml).
 
 #### Predator Color Calibration
 In order to find good HSV boundaries for color segmentation for finding the predator sphero, run the following:
@@ -56,4 +69,4 @@ Move the sliders around until you are satisfied with the resulting boundaries as
 
 ![predatorcolor](../../imgs/predatorcolor.png)
 
-Record the HSV upper and lower boundaries and enter them into the lower and upper predator color parameters in the corresponding yaml file [here](../../param/spherocolor_calib.yaml)
+Record the HSV upper and lower boundaries and enter them into the lower and upper predator color parameters in the corresponding yaml file [here](../../param/spherocolor_calib.yaml).
