@@ -35,6 +35,7 @@ class sphero_tracker:
         self.bridge = CvBridge()
         self.lower_obst = np.array(rospy.get_param('detect_obstacles/lower_obst'))
         self.upper_obst = np.array(rospy.get_param('detect_obstacles/upper_obst'))
+        self.radius = rospy.get_param('detect_obstacles/radius')
         self.image_sub = rospy.Subscriber("/combined_image",Image,self.imagecb)
         self.waypnts_sub = rospy.Subscriber("/waypoints",Waypoints,self.waypntcb)
         # self.list_pub = rospy.Service("waypoints_fixed",waypoint,self.waypnt_srv)
@@ -110,7 +111,7 @@ class sphero_tracker:
                     if vals[i] > 20:
                         self.obstacle_list.append(keys[i])
 
-                r = 17
+                # r = 17
 
                 if self.calib == False:
                     xg1,yg1 = self.waypnt_dict['M1']
@@ -118,8 +119,8 @@ class sphero_tracker:
                     pnt_list = []
                     x,y = self.waypnt_dict[self.obstacle_list[0]]
                     for i in range(6):
-                        xn = r*np.cos(2*np.pi*i/6.0) + x
-                        yn = r*np.sin(2*np.pi*i/6.0) + y
+                        xn = self.radius*np.cos(2*np.pi*i/6.0) + x
+                        yn = self.radius*np.sin(2*np.pi*i/6.0) + y
                         pnt_list.append([xn,yn])
 
                     xl1,yl1 = pnt_list[0]
@@ -140,8 +141,8 @@ class sphero_tracker:
                     x,y = self.waypnt_dict[obst]
                     self.hex_dict[obst] = []
                     for i in range(6):
-                        xn = r*np.cos(2*np.pi*i/6.0 + self.theta) + x
-                        yn = r*np.sin(2*np.pi*i/6.0 + self.theta) + y
+                        xn = self.radius*np.cos(2*np.pi*i/6.0 + self.theta) + x
+                        yn = self.radius*np.sin(2*np.pi*i/6.0 + self.theta) + y
                         self.hex_dict[obst].append([xn,yn])
 
 

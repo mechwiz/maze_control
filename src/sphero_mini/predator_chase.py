@@ -68,6 +68,7 @@ class predator_chase:
         self.maxSpeed = rospy.get_param('predator_chase/maxSpeed')
         self.minSpeed = rospy.get_param('predator_chase/minSpeed')
         self.resumeSpeed = rospy.get_param('predator_chase/resumeSpeed')
+        self.radius = rospy.get_param('detect_obstacles/radius',17)
         self.prey_sub = rospy.Subscriber("/center_point1",Point,self.prey_cb)
         self.prey_move = rospy.Subscriber("/prey/move",Point,self.preymove_cb)
         self.predator_move = rospy.Subscriber("/predator/move",Point,self.predatormove_cb)
@@ -274,15 +275,15 @@ class predator_chase:
             for obst in self.obstacles:
                 self.obstacle_pnts.append(self.waypnt_dict[obst])
 
-        r = 17
+        # r = 17
         if len(self.obstacles) > 0 and self.calib == False:
             xg1,yg1 = self.waypnt_dict['M1']
             xg2,yg2 = self.waypnt_dict['M17']
             pnt_list = []
             x,y = self.waypnt_dict[self.obstacles[0]]
             for i in range(6):
-                xn = r*np.cos(2*np.pi*i/6.0) + x
-                yn = r*np.sin(2*np.pi*i/6.0) + y
+                xn = self.radius*np.cos(2*np.pi*i/6.0) + x
+                yn = self.radius*np.sin(2*np.pi*i/6.0) + y
                 pnt_list.append([xn,yn])
 
             xl1,yl1 = pnt_list[0]
@@ -302,8 +303,8 @@ class predator_chase:
                 x,y = self.waypnt_dict[obst]
                 self.hex_dict[obst] = []
                 for i in range(6):
-                    xn = r*np.cos(2*np.pi*i/6.0 + self.theta) + x
-                    yn = r*np.sin(2*np.pi*i/6.0 + self.theta) + y
+                    xn = self.radius*np.cos(2*np.pi*i/6.0 + self.theta) + x
+                    yn = self.radius*np.sin(2*np.pi*i/6.0 + self.theta) + y
                     self.hex_dict[obst].append([xn,yn])
         # print self.waypnt_dict
         # self.prey_pathpnt = []

@@ -45,6 +45,7 @@ class sphero_tracker:
         self.upper_green = np.array(rospy.get_param('spheromini_tracker/upper_prey'))
         self.lower_red = np.array(rospy.get_param('spheromini_tracker/lower_predator'))
         self.upper_red = np.array(rospy.get_param('spheromini_tracker/upper_predator'))
+        self.radius = rospy.get_param('detect_obstacles/radius',17)
         self.image_sub = rospy.Subscriber("/combined_image",Image,self.imagecb)
         self.image_sub2 = rospy.Subscriber("/warped_image",Image,self.warpedcb)
         self.waypnts_sub = rospy.Subscriber("/waypoints",Waypoints,self.waypntcb)
@@ -242,7 +243,7 @@ class sphero_tracker:
                                     writeCSV = csv.writer(csvfile, delimiter=',')
                                     writeCSV.writerow([self.waypnt_keys[prey_idx],self.waypnt_keys[predator_idx]])
 
-            r = 17
+            # r = 17
 
             if len(self.waypnts) > 0 and len(self.obstacles) > 0 and self.calib == False:
                 xg1,yg1 = self.waypnt_dict['M1']
@@ -250,8 +251,8 @@ class sphero_tracker:
                 pnt_list = []
                 x,y = self.waypnt_dict[self.obstacles[0]]
                 for i in range(6):
-                    xn = r*np.cos(2*np.pi*i/6.0) + x
-                    yn = r*np.sin(2*np.pi*i/6.0) + y
+                    xn = self.radius*np.cos(2*np.pi*i/6.0) + x
+                    yn = self.radius*np.sin(2*np.pi*i/6.0) + y
                     pnt_list.append([xn,yn])
 
                 xl1,yl1 = pnt_list[0]
@@ -271,8 +272,8 @@ class sphero_tracker:
                     x,y = self.waypnt_dict[obst]
                     self.hex_dict[obst] = []
                     for i in range(6):
-                        xn = r*np.cos(2*np.pi*i/6.0 + self.theta) + x
-                        yn = r*np.sin(2*np.pi*i/6.0 + self.theta) + y
+                        xn = self.radius*np.cos(2*np.pi*i/6.0 + self.theta) + x
+                        yn = self.radius*np.sin(2*np.pi*i/6.0 + self.theta) + y
                         self.hex_dict[obst].append([xn,yn])
 
             if len(self.waypnts) > 0:
