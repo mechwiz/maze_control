@@ -54,6 +54,7 @@ class sphero_tracker:
             cv2.createTrackbar('Upper Hue','Converted Image',self.upper_obst[0],180,nothing)
             cv2.createTrackbar('Upper Sat','Converted Image',self.upper_obst[1],255,nothing)
             cv2.createTrackbar('Upper Value','Converted Image',self.upper_obst[2],255,nothing)
+            cv2.createTrackbar('Radius of Hexagon','Converted Image',self.radius,50,nothing)
             switch = '0 : OFF \n1 : ON'
             cv2.createTrackbar(switch, 'Converted Image',0,1,nothing)
 
@@ -63,6 +64,7 @@ class sphero_tracker:
             upph = cv2.getTrackbarPos('Upper Hue','Converted Image')
             upps = cv2.getTrackbarPos('Upper Sat','Converted Image')
             uppv= cv2.getTrackbarPos('Upper Value','Converted Image')
+            rad = cv2.getTrackbarPos('Radius of Hexagon','Converted Image')
 
             lower_obst = np.array([lowh,lows,lowv])
             upper_obst = np.array([upph,upps,uppv])
@@ -120,8 +122,8 @@ class sphero_tracker:
                     pnt_list = []
                     x,y = self.waypnt_dict[self.obstacle_list[0]]
                     for i in range(6):
-                        xn = self.radius*np.cos(2*np.pi*i/6.0) + x
-                        yn = self.radius*np.sin(2*np.pi*i/6.0) + y
+                        xn = rad*np.cos(2*np.pi*i/6.0) + x
+                        yn = rad*np.sin(2*np.pi*i/6.0) + y
                         pnt_list.append([xn,yn])
 
                     xl1,yl1 = pnt_list[0]
@@ -142,8 +144,8 @@ class sphero_tracker:
                     x,y = self.waypnt_dict[obst]
                     self.hex_dict[obst] = []
                     for i in range(6):
-                        xn = self.radius*np.cos(2*np.pi*i/6.0 + self.theta) + x
-                        yn = self.radius*np.sin(2*np.pi*i/6.0 + self.theta) + y
+                        xn = rad*np.cos(2*np.pi*i/6.0 + self.theta) + x
+                        yn = rad*np.sin(2*np.pi*i/6.0 + self.theta) + y
                         self.hex_dict[obst].append([xn,yn])
 
 
