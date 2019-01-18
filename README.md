@@ -202,6 +202,8 @@ If you ran the **sphero_finder** node, you will also see the paths for each of t
 
 If you ran the **sphero_tracker** node, wait until you are ready to start tracking the prey and predator paths after running the **predator_chase** node below. Then click on the image feed from the **sphero_tracker** node, hit the "**c**" key, and the paths will start to be tracked. For feedback purposes, the prey and predator paths will be displayed in blue and yellow respectively on the image feed of the **sphero_tracker** node. The sequence for each of these paths are automatically output to an [observed_path.csv](src/observed_path.csv) file. Note that the first and second columns correspond to the prey and predator respectively.
 
+No matter which node you ran, you will also see an overlay of blue hexagons at the waypoints that obstacles were detected at from the **detect_obstacles** node.
+
 <ol start="7">
 <li>Next, you will need to calibrate the spheros so that their relative frames are transformed into the global frame of the maze and into the camera frame. You can do this by placing each sphero in a relatively open area within the maze and running the following 2 commands <b>separately</b> - each one in a separate terminal. Wait for the calibration of the prey sphero to finish before running the predator calibration. Each calibration will take less than 5 seconds. If you are controlling the prey sphero through the App, then you should calibrate it using the App according to whatever reference frame you like. Typically, the blue calibration dot on the sphero should be facing you for best performance.</li>
 </ol>
@@ -256,7 +258,7 @@ Here is a short video of the sphero control working in the full-scale maze.
   <img src="imgs/full_scale_demo_real.gif" width="400" />
 </p>
 
-Here is a short video of the predator_chase working in the full-scale maze.
+Here is a short video of the predator chase program working in the full-scale maze.
 
 <p float="middle">
   <img src="imgs/full_scale_chase_demo.gif" width="400" />
