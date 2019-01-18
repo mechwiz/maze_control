@@ -104,7 +104,7 @@ class sphero_tracker:
                                         else:
                                             self.obstacle_dict[k] = 1
 
-            if 100 in self.obstacle_dict.values():
+            if len(self.obstacle_dict)>0 and max(self.obstacle_dict.values())>100:
                 self.obstacle_list = []
                 self.hex_dict = {}
                 vals = self.obstacle_dict.values()
@@ -162,8 +162,8 @@ class sphero_tracker:
             if len(self.obstacle_list) > 0:
                 for key in self.hex_dict:
                     # print np.array(self.hex_dict[key],np.int32)
-                    cv2.polylines(img_original,[np.array(self.hex_dict[key],np.int32)],True,(0,255,0),1)
-                    cv2.polylines(res,[np.array(self.hex_dict[key],np.int32)],True,(0,255,0),1)
+                    cv2.polylines(img_original,[np.array(self.hex_dict[key],np.int32)],True,(255,0,0),2)
+                    cv2.polylines(res,[np.array(self.hex_dict[key],np.int32)],True,(255,0,0),2)
 
 
             # cv2.imshow("Converted Image2",img_original)
@@ -186,6 +186,7 @@ class sphero_tracker:
 
     def waypntcb(self,data):
         self.raw_waypnts = data
+        self.obstacle_dict = {}
         alist = []
         outln = []
         for i in range(len(data.data)):

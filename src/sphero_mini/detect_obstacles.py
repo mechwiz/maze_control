@@ -182,6 +182,7 @@ class sphero_tracker:
 
     def waypntcb(self,data):
         self.raw_waypnts = data
+        self.obstacle_dict = {}
         alist = []
         outln = []
         for i in range(len(data.data)):
