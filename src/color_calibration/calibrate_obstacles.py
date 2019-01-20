@@ -298,6 +298,16 @@ def main():
     rospy.init_node('sphero_tracker', anonymous=False)
     ic = sphero_tracker()
     rospy.sleep(1)
+    rospack = rospkg.RosPack()
+    with open(os.path.join(rospack.get_path("maze_control"), "src", "waypoints.csv")) as csvfile:
+        readCSV = csv.reader(csvfile, delimiter=',')
+        allpts = []
+        for row in readCSV:
+            allpts.append(IntList(eval(row[0])))
+
+    alist = Waypoints()
+    alist.data = allpts
+    ic.waypntcb(alist)
 
     try:
         rospy.spin()

@@ -438,6 +438,15 @@ def main():
             else:
                 ic.obstacles.append(row[0])
 
+    with open(os.path.join(rospack.get_path("maze_control"), "src", "waypoints.csv")) as csvfile:
+        readCSV = csv.reader(csvfile, delimiter=',')
+        allpts = []
+        for row in readCSV:
+            allpts.append(IntList(eval(row[0])))
+
+    alist = Waypoints()
+    alist.data = allpts
+    ic.waypntcb(alist)
 
     try:
         rospy.spin()

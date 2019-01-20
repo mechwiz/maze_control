@@ -2,6 +2,8 @@
 import rospy
 import cv2
 import numpy as np
+import os, rospkg
+import csv
 
 from scipy import stats
 from cv_bridge import CvBridge, CvBridgeError
@@ -47,6 +49,7 @@ class image_overlay:
         self.polypnts7y = []
         self.polypnts8x = []
         self.polypnts8y = []
+        self.rospack = rospkg.RosPack()
         self.bridge = CvBridge()
         self.lower_birch = np.array(rospy.get_param('board_setup/lower_birch'))
         self.upper_birch = np.array(rospy.get_param('board_setup/upper_birch'))
@@ -357,7 +360,15 @@ class image_overlay:
             if k == ord('c') and len(self.avgpnt)>1 and len(self.polypnts)>1:
                 alist = Waypoints()
                 alist.data = self.allpts
-                self.list_pub.publish(alist)
+                # self.list_pub.publish(alist)
+
+                if os.path.exists(os.path.join(self.rospack.get_path("maze_control"), "src", "waypoints.csv")):
+                    os.remove(os.path.join(self.rospack.get_path("maze_control"), "src", "waypoints.csv"))
+
+                for pnt in self.allpts:
+                    with open(os.path.join(self.rospack.get_path("maze_control"), "src", "waypoints.csv"),mode='a') as csvfile:
+                        writeCSV = csv.writer(csvfile, delimiter=',')
+                        writeCSV.writerow([pnt.data])
                 rospy.loginfo('Points Captured')
 
         except CvBridgeError, e:
