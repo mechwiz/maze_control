@@ -39,7 +39,7 @@ In order to find good HSV boundaries for color segmentation for finding the obst
 roslaunch maze_control obstaclecolor_calibration.launch
 ```
 
-Move the sliders around until you are satisfied with the resulting boundaries as shown below. If you would like to have the program show the contours around the obstacles and draw hexagons around each identified obstacle for feedback purposes, make sure to hit the "**c**" key after clicking on the **maze_node** image feed. Then, you can also move the radius slider around to determine how big the size of the overlayed blue hexagons should be.
+Move the sliders around until you are satisfied with the resulting boundaries as shown below. You can also move the radius slider around to determine how big the size of the overlayed blue hexagons should be.
 
 ![obstaclecolor](../../imgs/obstaclecolor.png)
 
@@ -52,7 +52,7 @@ In order to find good HSV boundaries for color segmentation for finding the prey
 roslaunch maze_control preycolor_calibration.launch
 ```
 
-Move the sliders around until you are satisfied with the resulting boundaries as shown below. If you would like to have the program circle the prey and predator spheros for feedback purposes, make sure to hit the "**c**" key after clicking on the **maze_node** image feed.
+Move the sliders around until you are satisfied with the resulting boundaries as shown below.
 
 ![preycolor](../../imgs/preycolor.png)
 
@@ -65,7 +65,7 @@ In order to find good HSV boundaries for color segmentation for finding the pred
 roslaunch maze_control predatorcolor_calibration.launch
 ```
 
-Move the sliders around until you are satisfied with the resulting boundaries as shown below. If you would like to have the program circle the prey and predator spheros for feedback purposes, make sure to hit the "**c**" key after clicking on the **maze_node** image feed.
+Move the sliders around until you are satisfied with the resulting boundaries as shown below.
 
 ![predatorcolor](../../imgs/predatorcolor.png)
 
