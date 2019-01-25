@@ -368,7 +368,8 @@ class image_overlay:
                 for pnt in self.allpts:
                     with open(os.path.join(self.rospack.get_path("maze_control"), "src", "waypoints.csv"),mode='a') as csvfile:
                         writeCSV = csv.writer(csvfile, delimiter=',')
-                        writeCSV.writerow([pnt.data])
+                        p = pnt.data
+                        writeCSV.writerow([(int(p[0]),int(p[1]))])
                 rospy.loginfo('Points Captured')
 
         except CvBridgeError, e:
