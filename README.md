@@ -73,7 +73,7 @@ Due to the size of the maze environment, multiple cameras are used to provide a 
 That said, an adoption of [Adrian Rosebrock's](https://www.pyimagesearch.com/author/adrian/) Real-Time Image-Stitching code (with a thorough description posted [here](https://www.pyimagesearch.com/) on his blog [pyimagesearch](https://www.pyimagesearch.com/)) was used to stitch the 2 camera feeds together. A description of how my adoption works is discussed in the implementation section below.
 
 ## Implementation
-There are several steps and sidesteps to implementing this package which is discussed below.
+There are several steps and sidesteps to implementing this package which is discussed below. Keep in mind that when you open up a new terminal to run a different node, you should source the `setup.bash` file in the root directory of the workspace by running `source devel/setup.bash`.
 
 1. Plug in the usb cable from camera 1 (signified by a sticker on the cable) into your computer first, and the second cable afterwards. This must be done in this order because the package assumes camera 1 to be the _left_ image and camera 2 to be the _right_ image that will stitched together.
 
@@ -192,7 +192,7 @@ Note, that if you are manually controlling the prey sphero with the App, you wil
 
 | Sphero Finder Node | Sphero Tracking Node |
 |:--------------:|:--------------:|
-| <img src="imgs/sphero_finder1.png" width="500px" alt="" /> | <img src="imgs/sphero_finder2.png" width="500px" alt="" /> |
+| <img src="imgs/sphero_finder.png" width="500px" alt="" /> | <img src="imgs/sphero_tracker.png" width="500px" alt="" /> |
 
 No matter which of the 2 nodes you run above, you should see a green circle around the prey sphero and a blue circle around the predator sphero. Currently, the node identifies the prey and predator spheros by their green and purple colors respectively. If you do not see one or both of these circles, then you need to calibrate the color segmentation parameters for detecting them [here](launch/color_calibration/README.md) as mentioned above.
 
