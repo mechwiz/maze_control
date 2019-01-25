@@ -115,7 +115,7 @@ In order to cache the chosen homography matrix for future setups, copy the most 
 ```
 
 <ol start="3">
-<li>Launch the board setup node by running:</li></ol>
+<li>Perform this step if you need to determine and save the cell waypoint configuration (shown below on the right) to the [waypoint csv file](src/waypoints.csv). For the setup in the Maciver lab, this configuration has already been done, so you can skip this step. If the maze or the cameras have been moved (which can be figured out by running the next steps and seeing if the red dots don't line up with the cell center points), you will need to do this step again. To accomplish this, launch the board setup node by running:</li></ol>
 
 ```
 roslaunch maze_control maze_setup.launch
@@ -144,7 +144,7 @@ Y1,Y2,Y3,...,Y9
 ```
 These points can be saved to a [waypoint csv file](src/waypoints.csv) so that other nodes can use them for obstacle detection and sphero calibration & control. The way to do this is by clicking on the image feed from the **maze_setup** node and then hitting the "**c**" key. You can do this as many times as you want until you are satisfied with the location of these waypoints on the maze. You should then close the node by running `Cntrl+c` in the terminal in order to free up computer processing power.
 
-Note, once this procedure is done, the points are cached for future use of this package so that subsequent setups take less time. You should only need to run this node again if the maze or the cameras have been moved from the positions from which this calibration took place.
+Note, once this procedure is done, the points are cached for future use of this package so that subsequent setups take less time. You should only need to run this node again if the maze or the cameras have been moved from the positions from which this calibration took place as mentioned above.
 
 <ol start="4">
 <li>If there are obstacles in the maze, launch the obstacle detection node by running the following command below.</li></ol>
