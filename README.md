@@ -115,7 +115,7 @@ In order to cache the chosen homography matrix for future setups, copy the most 
 ```
 
 <ol start="3">
-<li>Perform this step if you need to determine and save the cell waypoint configuration (shown below on the right) to the [waypoint csv file](src/waypoints.csv). For the setup in the Maciver lab, this configuration has already been done, so you can skip this step. If the maze or the cameras have been moved (which can be figured out by running the next steps and seeing if the red dots don't line up with the cell center points), you will need to do this step again. To accomplish this, launch the board setup node by running:</li></ol>
+<li>Perform this step if you need to determine and save the cell waypoint configuration (shown below on the right) to the <a href="src/waypoints.csv">waypoints csv file</a>. For the setup in the Maciver lab, this configuration has already been done, so you can skip this step. If the maze or the cameras have been moved (which can be figured out by running the next steps and seeing if the red dots don't line up with the cell center points), you will need to do this step again. To accomplish this, launch the board setup node by running:</li></ol>
 
 ```
 roslaunch maze_control maze_setup.launch
